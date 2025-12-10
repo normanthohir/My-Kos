@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:may_kos/config/theme.dart';
+import 'package:may_kos/page/kamar/kamar_page.dart';
+import 'package:may_kos/page/penghuni/penghuni_page.dart';
 
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
@@ -13,10 +15,14 @@ class DashboardPage extends StatelessWidget {
         backgroundColor: colorsApp.background,
         title: const Text(
           "Dashboard Kos",
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontWeight: FontWeight.w700,
+            fontSize: 23,
+          ),
         ),
+        foregroundColor: Colors.blue[800],
+        elevation: 1,
         centerTitle: true,
-        elevation: 0,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
@@ -84,13 +90,27 @@ class DashboardPage extends StatelessWidget {
                   _buildMenuButton(
                     icon: Iconsax.home_2,
                     title: "Data Kamar",
-                    onTap: () {},
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const KamarPage(),
+                        ),
+                      );
+                    },
                   ),
                   const SizedBox(height: 12),
                   _buildMenuButton(
                     icon: Iconsax.profile_circle,
                     title: "Data Penghuni",
-                    onTap: () {},
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const PenghuniPage(),
+                        ),
+                      );
+                    },
                   ),
                   const SizedBox(height: 12),
                   _buildMenuButton(
