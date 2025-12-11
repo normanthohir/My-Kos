@@ -3,6 +3,7 @@ import 'package:iconsax/iconsax.dart';
 import 'package:may_kos/config/theme.dart';
 import 'package:may_kos/page/kamar/kamar_page.dart';
 import 'package:may_kos/page/penghuni/penghuni_page.dart';
+import 'package:may_kos/page/penghuni/penghuni_page1.dart';
 
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});

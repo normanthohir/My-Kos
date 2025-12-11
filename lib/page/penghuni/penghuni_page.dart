@@ -1,104 +1,55 @@
 import 'package:flutter/material.dart';
+import 'package:iconsax/iconsax.dart';
+import 'package:may_kos/config/theme.dart';
+import 'package:may_kos/widgets/widget_appBar.dart';
 
 class PenghuniPage extends StatelessWidget {
-  const PenghuniPage({Key? key}) : super(key: key);
+  const PenghuniPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // Data dummy penghuni
-    List<Resident> residents = [
-      Resident(
-        id: '1',
-        nama: 'Budi Santoso',
-        hp: '081234567890',
-        kamar: '101',
-        status: 'aktif',
-        tanggalMasuk: '15 Jan 2024',
-        foto: 'https://randomuser.me/api/portraits/men/1.jpg',
-      ),
-      Resident(
-        id: '2',
-        nama: 'Siti Aminah',
-        hp: '082345678901',
-        kamar: '102',
-        status: 'aktif',
-        tanggalMasuk: '20 Feb 2024',
-        foto: 'https://randomuser.me/api/portraits/women/2.jpg',
-      ),
-      Resident(
-        id: '3',
-        nama: 'Ahmad Fauzi',
-        hp: '083456789012',
-        kamar: '104',
-        status: 'aktif',
-        tanggalMasuk: '10 Mar 2024',
-        foto: 'https://randomuser.me/api/portraits/men/3.jpg',
-      ),
-      Resident(
-        id: '4',
-        nama: 'Dewi Lestari',
-        hp: '084567890123',
-        kamar: '201',
-        status: 'keluar',
-        tanggalMasuk: '01 Des 2023',
-        tanggalKeluar: '14 Jan 2024',
-        foto: 'https://randomuser.me/api/portraits/women/4.jpg',
-      ),
-      Resident(
-        id: '5',
-        nama: 'Rudi Hartono',
-        hp: '085678901234',
-        kamar: '202',
-        status: 'keluar',
-        tanggalMasuk: '15 Nov 2023',
-        tanggalKeluar: '19 Feb 2024',
-        foto: 'https://randomuser.me/api/portraits/men/5.jpg',
-      ),
-      Resident(
-        id: '6',
-        nama: 'Maya Indah',
-        hp: '086789012345',
-        kamar: '103',
-        status: 'aktif',
-        tanggalMasuk: '05 Apr 2024',
-        foto: 'https://randomuser.me/api/portraits/women/6.jpg',
-      ),
-      Resident(
-        id: '7',
-        nama: 'Fajar Nugraha',
-        hp: '087890123456',
-        kamar: '105',
-        status: 'aktif',
-        tanggalMasuk: '12 Apr 2024',
-        foto: 'https://randomuser.me/api/portraits/men/7.jpg',
-      ),
-      Resident(
-        id: '8',
-        nama: 'Rina Melati',
-        hp: '088901234567',
-        kamar: '203',
-        status: 'keluar',
-        tanggalMasuk: '10 Okt 2023',
-        tanggalKeluar: '15 Mar 2024',
-        foto: 'https://randomuser.me/api/portraits/women/8.jpg',
-      ),
-    ];
-
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: colorsApp.background,
+      appBar: WidgetAppbar(
+        title: 'Data Penghuni',
+        actions: [
+          Container(
+            width: 40,
+            decoration: BoxDecoration(
+              color: colorsApp.blue,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: const IconButton(
+              onPressed: null,
+              icon: Icon(
+                Iconsax.user_add,
+                color: colorsApp.background,
+              ),
+              tooltip: 'Tambah Penghuni',
+            ),
+          ),
+          SizedBox(width: 13),
+        ],
+      ),
       body: Column(
         children: [
-          // Header dengan statistik
           Container(
             padding: const EdgeInsets.only(
-              top: 60,
+              top: 24,
               left: 24,
               right: 24,
-              bottom: 24,
+              bottom: 36,
             ),
             decoration: BoxDecoration(
-              color: Colors.blue[800],
-              borderRadius: const BorderRadius.only(
+              color: colorsApp.blue,
+              borderRadius: BorderRadius.only(
                 bottomLeft: Radius.circular(30),
                 bottomRight: Radius.circular(30),
               ),
@@ -110,108 +61,40 @@ class PenghuniPage extends StatelessWidget {
                 ),
               ],
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // Judul dan tombol tambah
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Data Penghuni',
-                          style: TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Total ${residents.length} penghuni terdaftar',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.white.withOpacity(0.9),
-                          ),
-                        ),
-                      ],
-                    ),
-                    // Tombol tambah penghuni
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: IconButton(
-                        onPressed: () {
-                          // Aksi tambah penghuni
-                        },
-                        icon: Icon(
-                          Icons.person_add,
-                          color: Colors.blue[800],
-                        ),
-                        tooltip: 'Tambah Penghuni',
-                      ),
-                    ),
-                  ],
+                _buildCard(
+                  context,
+                  'Aktif',
+                  '20',
+                  Icons.person,
+                  Colors.green,
                 ),
-
-                const SizedBox(height: 30),
-
-                // Statistik card
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    _buildStatCard(
-                      context,
-                      'Aktif',
-                      residents
-                          .where((r) => r.status == 'aktif')
-                          .length
-                          .toString(),
-                      Colors.green,
-                      Icons.person,
-                    ),
-                    _buildStatCard(
-                      context,
-                      'Keluar',
-                      residents
-                          .where((r) => r.status == 'keluar')
-                          .length
-                          .toString(),
-                      Colors.orange,
-                      Icons.logout,
-                    ),
-                    _buildStatCard(
-                      context,
-                      'Kamar',
-                      '8',
-                      Colors.purple,
-                      Icons.hotel,
-                    ),
-                    _buildStatCard(
-                      context,
-                      'Baru',
-                      '3',
-                      Colors.red,
-                      Icons.new_releases,
-                    ),
-                  ],
+                _buildCard(
+                  context,
+                  'Keluar',
+                  '5',
+                  Icons.logout,
+                  Colors.red,
+                ),
+                _buildCard(
+                  context,
+                  'Kamar',
+                  '8',
+                  Icons.hotel,
+                  Colors.purple,
+                ),
+                _buildCard(
+                  context,
+                  'Baru',
+                  '3',
+                  Icons.new_releases,
+                  Colors.red,
                 ),
               ],
             ),
           ),
-
-          // Search dan filter bar
           Padding(
             padding: const EdgeInsets.all(20),
             child: Container(
@@ -221,7 +104,7 @@ class PenghuniPage extends StatelessWidget {
                 borderRadius: BorderRadius.circular(15),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.grey.withOpacity(0.1),
+                    color: Colors.grey.withOpacity(0.6),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
@@ -234,32 +117,11 @@ class PenghuniPage extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: TextField(
                         decoration: InputDecoration(
-                          hintText: 'Cari nama penghuni...',
+                          hintText: 'Cari penghuni...',
                           border: InputBorder.none,
                           hintStyle: TextStyle(color: Colors.grey[500]),
                           icon: Icon(Icons.search, color: Colors.grey[500]),
                         ),
-                      ),
-                    ),
-                  ),
-                  // Filter button
-                  Container(
-                    width: 50,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      color: Colors.blue[50],
-                      borderRadius: const BorderRadius.only(
-                        topRight: Radius.circular(15),
-                        bottomRight: Radius.circular(15),
-                      ),
-                    ),
-                    child: IconButton(
-                      onPressed: () {
-                        // Aksi filter
-                      },
-                      icon: Icon(
-                        Icons.filter_list,
-                        color: Colors.blue[800],
                       ),
                     ),
                   ),
@@ -268,56 +130,77 @@ class PenghuniPage extends StatelessWidget {
             ),
           ),
 
-          // Tab status
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Row(
               children: [
-                Expanded(
-                  child: _buildStatusTab('Semua', true),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: _buildStatusTab('Aktif', false),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: _buildStatusTab('Keluar', false),
-                ),
+                Expanded(child: _buildStatusTab('Semua', true)),
+                SizedBox(width: 10),
+                Expanded(child: _buildStatusTab('Aktif', false)),
+                SizedBox(width: 10),
+                Expanded(child: _buildStatusTab('Keluar', false)),
               ],
             ),
           ),
-
           const SizedBox(height: 20),
 
-          // List penghuni
+          // List Penghun
+
           Expanded(
             child: ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              itemCount: residents.length,
+              itemCount: 1,
               itemBuilder: (context, index) {
-                return _buildResidentCard(residents[index]);
+                return Column(
+                  children: [
+                    _buildcardPenghuni(
+                      'Siti Milaa',
+                      true,
+                      '08012677126',
+                      '012',
+                      '12 03 2024',
+                      '',
+                    ),
+                    _buildcardPenghuni(
+                      'Ahmad Fauzi',
+                      false,
+                      '08012677126',
+                      '022',
+                      '12 06 2024',
+                      '20 04 2025',
+                    ),
+                    _buildcardPenghuni(
+                      'Reza Maulana',
+                      true,
+                      '434398439894',
+                      '011',
+                      '12 04 2024',
+                      '',
+                    ),
+                    _buildcardPenghuni(
+                      'Swisto Bagus',
+                      false,
+                      '080126778376',
+                      '002',
+                      '12 04 2024',
+                      '10 05 2025',
+                    ),
+                  ],
+                );
               },
             ),
           ),
         ],
       ),
-
-      // Floating Action Button
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Aksi tambah penghuni
-        },
-        backgroundColor: Colors.blue[800],
-        child: const Icon(Icons.person_add, color: Colors.white, size: 28),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 
-  // Widget untuk statistik card
-  Widget _buildStatCard(BuildContext context, String title, String value,
-      Color color, IconData icon) {
+  Widget _buildCard(
+    BuildContext context,
+    String title,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
     return Container(
       width: MediaQuery.of(context).size.width * 0.2,
       padding: const EdgeInsets.all(12),
@@ -328,7 +211,7 @@ class PenghuniPage extends StatelessWidget {
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
             blurRadius: 10,
-            offset: const Offset(0, 4),
+            offset: Offset(0, 4),
           ),
         ],
       ),
@@ -341,7 +224,11 @@ class PenghuniPage extends StatelessWidget {
               color: color.withOpacity(0.1),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(icon, color: color, size: 20),
+            child: Icon(
+              icon,
+              size: 22,
+              color: color,
+            ),
           ),
           const SizedBox(height: 8),
           Text(
@@ -352,6 +239,7 @@ class PenghuniPage extends StatelessWidget {
               color: Colors.grey[800],
             ),
           ),
+          const SizedBox(height: 5),
           Text(
             title,
             style: TextStyle(
@@ -364,7 +252,7 @@ class PenghuniPage extends StatelessWidget {
     );
   }
 
-  // Widget untuk status tab
+// tap status penghuni
   Widget _buildStatusTab(String label, bool isActive) {
     return Container(
       height: 40,
@@ -372,7 +260,7 @@ class PenghuniPage extends StatelessWidget {
         color: isActive ? Colors.blue[800] : Colors.white,
         borderRadius: BorderRadius.circular(10),
         border: Border.all(
-          color: isActive ? Colors.blue[800]! : Colors.grey[300]!,
+          color: isActive ? Colors.blue[800]! : Colors.grey[500]!,
         ),
         boxShadow: isActive
             ? [
@@ -385,36 +273,39 @@ class PenghuniPage extends StatelessWidget {
             : null,
       ),
       child: Center(
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: isActive ? Colors.white : Colors.grey[700],
-          ),
-        ),
+        child: Text(label,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: isActive ? Colors.white : Colors.grey[600],
+            )),
       ),
     );
   }
 
-  // Widget untuk resident card
-  Widget _buildResidentCard(Resident resident) {
+  Widget _buildcardPenghuni(
+    String namaPenghuni,
+    bool statusPenghuni,
+    String nomorTelepon,
+    String kamarPenghuni,
+    String tanggalMasuk,
+    String tanggalKeluar,
+  ) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 15),
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(15),
+        borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
             color: Colors.grey.withOpacity(0.1),
-            blurRadius: 15,
-            offset: const Offset(0, 5),
-          ),
+            blurRadius: 6,
+            offset: const Offset(0, 4),
+          )
         ],
       ),
       child: Row(
         children: [
-          // Foto profil
           Padding(
             padding: const EdgeInsets.all(15),
             child: Container(
@@ -422,30 +313,14 @@ class PenghuniPage extends StatelessWidget {
               height: 60,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
-                image: resident.foto.isNotEmpty
-                    ? DecorationImage(
-                        image: NetworkImage(resident.foto),
-                        fit: BoxFit.cover,
-                      )
-                    : null,
-                color: resident.foto.isEmpty ? Colors.blue[100] : null,
               ),
-              child: resident.foto.isEmpty
-                  ? Center(
-                      child: Text(
-                        resident.nama[0],
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.blue[800],
-                        ),
-                      ),
-                    )
-                  : null,
+              child: Icon(
+                Icons.person,
+                size: 70,
+                color: Colors.blueAccent,
+              ),
             ),
           ),
-
-          // Informasi penghuni
           Expanded(
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 15),
@@ -456,8 +331,8 @@ class PenghuniPage extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        resident.nama,
-                        style: const TextStyle(
+                        namaPenghuni,
+                        style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                           color: Colors.black87,
@@ -465,52 +340,49 @@ class PenghuniPage extends StatelessWidget {
                       ),
                       Container(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 4,
+                          horizontal: 13,
+                          vertical: 2,
                         ),
                         decoration: BoxDecoration(
-                          color: resident.status == 'aktif'
+                          color: statusPenghuni
                               ? Colors.green[50]
-                              : Colors.orange[50],
+                              : Colors.red[50],
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
-                            color: resident.status == 'aktif'
+                            color: statusPenghuni
                                 ? Colors.green[100]!
-                                : Colors.orange[100]!,
+                                : Colors.red[100]!,
                           ),
                         ),
                         child: Row(
                           children: [
                             Container(
-                              width: 6,
-                              height: 6,
+                              width: 8,
+                              height: 8,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                color: resident.status == 'aktif'
-                                    ? Colors.green[600]
-                                    : Colors.orange[600],
+                                color: statusPenghuni
+                                    ? Colors.green[400]
+                                    : Colors.red[400],
                               ),
                             ),
-                            const SizedBox(width: 6),
+                            const SizedBox(width: 4),
                             Text(
-                              resident.status == 'aktif' ? 'Aktif' : 'Keluar',
+                              statusPenghuni ? 'Aktif' : 'Keluar',
                               style: TextStyle(
                                 fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                                color: resident.status == 'aktif'
+                                color: statusPenghuni
                                     ? Colors.green[800]
-                                    : Colors.orange[800],
+                                    : Colors.red,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
                           ],
                         ),
-                      ),
+                      )
                     ],
                   ),
-
                   const SizedBox(height: 8),
-
-                  // Nomor HP
                   Row(
                     children: [
                       Icon(
@@ -520,7 +392,7 @@ class PenghuniPage extends StatelessWidget {
                       ),
                       const SizedBox(width: 6),
                       Text(
-                        resident.hp,
+                        nomorTelepon,
                         style: TextStyle(
                           fontSize: 13,
                           color: Colors.grey[700],
@@ -528,71 +400,70 @@ class PenghuniPage extends StatelessWidget {
                       ),
                     ],
                   ),
-
                   const SizedBox(height: 4),
-
                   // Kamar
                   Row(
                     children: [
                       Icon(
                         Icons.hotel,
                         size: 14,
-                        color: Colors.blue[600],
+                        color: Colors.purple[600],
                       ),
                       const SizedBox(width: 6),
                       Text(
-                        'Kamar ${resident.kamar}',
+                        "Kamar $kamarPenghuni",
                         style: TextStyle(
                           fontSize: 13,
-                          color: Colors.blue[800],
+                          color: Colors.purple[800],
                           fontWeight: FontWeight.w500,
                         ),
                       ),
                     ],
                   ),
-
-                  const SizedBox(height: 8),
-
-                  // Tanggal
+                  const SizedBox(height: 4),
+                  // Tanggal masuk / keluar
                   Row(
                     children: [
                       Icon(
-                        Icons.calendar_today,
+                        Icons.calendar_month,
                         size: 14,
-                        color: Colors.grey[600],
+                        color: Colors.green[600],
                       ),
                       const SizedBox(width: 6),
                       Text(
-                        'Masuk: ${resident.tanggalMasuk}',
+                        'Masuk: $tanggalMasuk ',
                         style: TextStyle(
                           fontSize: 12,
-                          color: Colors.grey[600],
+                          color: Colors.grey[700],
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
-                      if (resident.status == 'keluar' &&
-                          resident.tanggalKeluar != null) ...[
-                        const SizedBox(width: 10),
-                        Icon(
-                          Icons.logout,
-                          size: 14,
-                          color: Colors.grey[600],
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          'Keluar: ${resident.tanggalKeluar}',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                      ],
+                      statusPenghuni
+                          ? const Text('')
+                          : Row(
+                              children: [
+                                Text("| "),
+                                Icon(
+                                  Icons.logout,
+                                  size: 12,
+                                  color: Colors.red[600],
+                                ),
+                                Text(
+                                  '$tanggalKeluar',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey[700],
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
                     ],
                   ),
                 ],
               ),
             ),
           ),
-
           // Tombol aksi
           Padding(
             padding: const EdgeInsets.only(right: 15),
@@ -612,76 +483,43 @@ class PenghuniPage extends StatelessWidget {
                     ],
                   ),
                 ),
-                const PopupMenuItem(
-                  value: 'edit',
-                  child: Row(
-                    children: [
-                      Icon(Icons.edit, size: 18, color: Colors.green),
-                      SizedBox(width: 8),
-                      Text('Edit'),
-                    ],
-                  ),
-                ),
-                if (resident.status == 'aktif')
-                  const PopupMenuItem(
-                    value: 'checkout',
+                if (statusPenghuni)
+                  PopupMenuItem<String>(
+                    value: 'edit',
                     child: Row(
                       children: [
-                        Icon(Icons.logout, size: 18, color: Colors.orange),
+                        Icon(Icons.edit, size: 18, color: Colors.green),
                         SizedBox(width: 8),
-                        Text('Check-out'),
+                        Text('Edit'),
                       ],
                     ),
                   ),
-                const PopupMenuItem(
-                  value: 'delete',
-                  child: Row(
-                    children: [
-                      Icon(Icons.delete, size: 18, color: Colors.red),
-                      SizedBox(width: 8),
-                      Text('Hapus'),
-                    ],
-                  ),
-                ),
+                statusPenghuni
+                    ? const PopupMenuItem(
+                        value: 'keluar',
+                        child: Row(
+                          children: [
+                            Icon(Icons.logout, size: 18, color: Colors.orange),
+                            SizedBox(width: 8),
+                            Text('Keluar'),
+                          ],
+                        ),
+                      )
+                    : PopupMenuItem(
+                        value: 'Hapus',
+                        child: Row(
+                          children: [
+                            Icon(Icons.delete, size: 18, color: Colors.red),
+                            SizedBox(width: 8),
+                            Text('Hapus'),
+                          ],
+                        ),
+                      ),
               ],
-              onSelected: (value) {
-                // Aksi berdasarkan pilihan
-                if (value == 'detail') {
-                  // Navigasi ke detail
-                } else if (value == 'edit') {
-                  // Navigasi ke edit
-                } else if (value == 'checkout') {
-                  // Proses checkout
-                } else if (value == 'delete') {
-                  // Hapus data
-                }
-              },
             ),
           ),
         ],
       ),
     );
   }
-}
-
-class Resident {
-  final String id;
-  final String nama;
-  final String hp;
-  final String kamar;
-  final String status;
-  final String tanggalMasuk;
-  final String? tanggalKeluar;
-  final String foto;
-
-  Resident({
-    required this.id,
-    required this.nama,
-    required this.hp,
-    required this.kamar,
-    required this.status,
-    required this.tanggalMasuk,
-    this.tanggalKeluar,
-    this.foto = '',
-  });
 }
