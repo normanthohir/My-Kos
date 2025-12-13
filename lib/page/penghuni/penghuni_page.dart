@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:may_kos/config/theme.dart';
+import 'package:may_kos/page/penghuni/add_penghuniForm.dart';
 import 'package:may_kos/widgets/widget_appBar.dart';
 
 class PenghuniPage extends StatelessWidget {
@@ -13,26 +14,30 @@ class PenghuniPage extends StatelessWidget {
       appBar: WidgetAppbar(
         title: 'Data Penghuni',
         actions: [
-          Container(
-            width: 40,
-            decoration: BoxDecoration(
-              color: colorsApp.blue,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: const IconButton(
-              onPressed: null,
-              icon: Icon(
-                Iconsax.user_add,
-                color: colorsApp.background,
+          InkWell(
+            onTap: () {
+              showAddPenghuniModal(context);
+            },
+            child: Container(
+              decoration: BoxDecoration(
+                color: colorsApp.blue,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
-              tooltip: 'Tambah Penghuni',
+              child: const IconButton(
+                onPressed: null,
+                icon: Icon(
+                  Iconsax.user_add,
+                  color: colorsApp.background,
+                ),
+                tooltip: 'Tambah Penghuni',
+              ),
             ),
           ),
           SizedBox(width: 13),
@@ -520,6 +525,55 @@ class PenghuniPage extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  void showAddPenghuniModal(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true, // Penting agar form tidak tertutup keyboard
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+          ),
+          child: Container(
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(24),
+                topRight: Radius.circular(24),
+              ),
+            ),
+            child: SafeArea(
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Handle bar
+                      Container(
+                        width: 40,
+                        height: 5,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[300],
+                          borderRadius: BorderRadius.circular(3),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+
+                      // Form Add Penghuni
+                      AddPenghuniForm(),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }
