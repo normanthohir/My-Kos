@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:may_kos/config/theme.dart';
-import 'package:may_kos/page/penghuni/add_penghuniForm.dart';
+import 'package:may_kos/page/penghuni/info_penghuni.dart';
+import 'package:may_kos/page/penghuni/penghuni_Form.dart';
 import 'package:may_kos/widgets/widget_appBar.dart';
 
 class PenghuniPage extends StatelessWidget {
@@ -16,11 +18,14 @@ class PenghuniPage extends StatelessWidget {
         actions: [
           InkWell(
             onTap: () {
-              showAddPenghuniModal(context);
+              showPenghuniModal(
+                context: context,
+                isEditMode: false,
+              );
             },
             child: Container(
               decoration: BoxDecoration(
-                color: colorsApp.blue,
+                color: colorsApp.primary,
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
@@ -53,18 +58,19 @@ class PenghuniPage extends StatelessWidget {
               bottom: 36,
             ),
             decoration: BoxDecoration(
-              color: colorsApp.blue,
+              gradient: LinearGradient(
+                colors: [
+                  colorsApp.primary,
+                  colorsApp.primary.withOpacity(0.8),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
               borderRadius: BorderRadius.only(
                 bottomLeft: Radius.circular(30),
                 bottomRight: Radius.circular(30),
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.blue[900]!.withOpacity(0.3),
-                  blurRadius: 20,
-                  offset: const Offset(0, 10),
-                ),
-              ],
+              boxShadow: colorsApp.cardShadow,
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -158,34 +164,38 @@ class PenghuniPage extends StatelessWidget {
                 return Column(
                   children: [
                     _buildcardPenghuni(
+                      1,
                       'Siti Milaa',
                       true,
                       '08012677126',
-                      '012',
+                      '101',
                       '12 03 2024',
                       '',
                     ),
                     _buildcardPenghuni(
+                      2,
                       'Ahmad Fauzi',
                       false,
                       '08012677126',
-                      '022',
+                      '102',
                       '12 06 2024',
                       '20 04 2025',
                     ),
                     _buildcardPenghuni(
+                      3,
                       'Reza Maulana',
                       true,
                       '434398439894',
-                      '011',
+                      '201',
                       '12 04 2024',
                       '',
                     ),
                     _buildcardPenghuni(
+                      4,
                       'Swisto Bagus',
                       false,
                       '080126778376',
-                      '002',
+                      '202',
                       '12 04 2024',
                       '10 05 2025',
                     ),
@@ -212,13 +222,7 @@ class PenghuniPage extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: Offset(0, 4),
-          ),
-        ],
+        boxShadow: colorsApp.cardShadow,
       ),
       child: Column(
         children: [
@@ -289,6 +293,7 @@ class PenghuniPage extends StatelessWidget {
   }
 
   Widget _buildcardPenghuni(
+    int Id,
     String namaPenghuni,
     bool statusPenghuni,
     String nomorTelepon,
@@ -299,7 +304,7 @@ class PenghuniPage extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorsApp.card,
         borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
@@ -312,17 +317,27 @@ class PenghuniPage extends StatelessWidget {
       child: Row(
         children: [
           Padding(
-            padding: const EdgeInsets.all(15),
+            padding: const EdgeInsets.all(10),
             child: Container(
-              width: 60,
-              height: 60,
+              width: 70,
+              height: 70,
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
+                shape: BoxShape.circle,
+                color: colorsApp.primary,
+                border: Border.all(
+                  color: colorsApp.background,
+                  width: 0,
+                ),
               ),
-              child: Icon(
-                Icons.person,
-                size: 70,
-                color: Colors.blueAccent,
+              child: Center(
+                child: Text(
+                  getInitials(namaPenghuni ?? ''),
+                  style: GoogleFonts.poppins(
+                    fontSize: 28,
+                    fontWeight: FontWeight.w700,
+                    color: colorsApp.background,
+                  ),
+                ),
               ),
             ),
           ),
@@ -340,7 +355,7 @@ class PenghuniPage extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: Colors.black87,
+                          color: colorsApp.textSecondary,
                         ),
                       ),
                       Container(
@@ -412,14 +427,14 @@ class PenghuniPage extends StatelessWidget {
                       Icon(
                         Icons.hotel,
                         size: 14,
-                        color: Colors.purple[600],
+                        color: Colors.grey[600],
                       ),
                       const SizedBox(width: 6),
                       Text(
                         "Kamar $kamarPenghuni",
                         style: TextStyle(
                           fontSize: 13,
-                          color: Colors.purple[800],
+                          color: Colors.grey[600],
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -432,7 +447,7 @@ class PenghuniPage extends StatelessWidget {
                       Icon(
                         Icons.calendar_month,
                         size: 14,
-                        color: Colors.green[600],
+                        color: Colors.grey[600],
                       ),
                       const SizedBox(width: 6),
                       Text(
@@ -451,8 +466,9 @@ class PenghuniPage extends StatelessWidget {
                                 Icon(
                                   Icons.logout,
                                   size: 12,
-                                  color: Colors.red[600],
+                                  color: Colors.grey[600],
                                 ),
+                                SizedBox(width: 1),
                                 Text(
                                   '$tanggalKeluar',
                                   style: TextStyle(
@@ -478,13 +494,28 @@ class PenghuniPage extends StatelessWidget {
                 color: Colors.grey[600],
               ),
               itemBuilder: (context) => [
-                const PopupMenuItem(
-                  value: 'detail',
+                PopupMenuItem(
+                  onTap: () {
+                    Future.delayed(Duration.zero, () {
+                      showDetailPenghuniDialogWithAnimation(
+                        context: context,
+                        penghuniData: {
+                          'id': Id,
+                          'nama': namaPenghuni,
+                          'nomorTelepon': nomorTelepon,
+                          'kamar': kamarPenghuni,
+                          'tanggalMasuk': tanggalMasuk,
+                          'tanggalKeluar': tanggalKeluar,
+                        },
+                      );
+                    });
+                  },
+                  value: 'info',
                   child: Row(
                     children: [
                       Icon(Icons.visibility, size: 18, color: Colors.blue),
                       SizedBox(width: 8),
-                      Text('Detail'),
+                      Text('info'),
                     ],
                   ),
                 ),
@@ -498,6 +529,22 @@ class PenghuniPage extends StatelessWidget {
                         Text('Edit'),
                       ],
                     ),
+                    onTap: () {
+                      // Data penghuni yang akan diedit (contoh)
+                      Map<String, dynamic> penghuniData = {
+                        'id': Id,
+                        'nama': namaPenghuni,
+                        'nomorTelepon': nomorTelepon,
+                        'kamar': kamarPenghuni,
+                        'tanggalMasuk': tanggalMasuk,
+                      };
+
+                      showPenghuniModal(
+                        context: context,
+                        penghuniData: penghuniData,
+                        isEditMode: true,
+                      );
+                    },
                   ),
                 statusPenghuni
                     ? const PopupMenuItem(
@@ -528,10 +575,14 @@ class PenghuniPage extends StatelessWidget {
     );
   }
 
-  void showAddPenghuniModal(BuildContext context) {
+  void showPenghuniModal({
+    required BuildContext context,
+    Map<String, dynamic>? penghuniData,
+    bool isEditMode = false,
+  }) {
     showModalBottomSheet(
       context: context,
-      isScrollControlled: true, // Penting agar form tidak tertutup keyboard
+      isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) {
         return Padding(
@@ -564,8 +615,11 @@ class PenghuniPage extends StatelessWidget {
                       ),
                       const SizedBox(height: 20),
 
-                      // Form Add Penghuni
-                      AddPenghuniForm(),
+                      // Form Penghuni
+                      PenghuniForm(
+                        penghuniData: penghuniData,
+                        isEditMode: isEditMode,
+                      ),
                     ],
                   ),
                 ),
@@ -574,6 +628,56 @@ class PenghuniPage extends StatelessWidget {
           ),
         );
       },
+    ).then((result) {
+      // Handle result ketika form ditutup
+      if (result != null) {
+        // result berisi data yang dikirim dari form
+        print('Data penghuni: $result');
+
+        // Di sini Anda bisa panggil fungsi untuk menyimpan ke database
+        if (isEditMode) {
+          // Panggil fungsi update
+          // updatePenghuni(penghuniData['id'], result);
+        } else {
+          // Panggil fungsi tambah
+          // addPenghuni(result);
+        }
+      }
+    });
+  }
+
+  // Atau dengan animasi yang lebih smooth:
+  void showDetailPenghuniDialogWithAnimation({
+    required BuildContext context,
+    required Map<String, dynamic> penghuniData,
+  }) {
+    showGeneralDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: '',
+      barrierColor: Colors.black.withOpacity(0.5),
+      transitionDuration: const Duration(milliseconds: 300),
+      pageBuilder: (context, animation, secondaryAnimation) {
+        return ScaleTransition(
+          scale: CurvedAnimation(
+            parent: animation,
+            curve: Curves.easeOutBack,
+          ),
+          child: FadeTransition(
+            opacity: animation,
+            child: DetailPenghuniDialog(penghuniData: penghuniData),
+          ),
+        );
+      },
     );
+  }
+
+  String getInitials(String name) {
+    if (name.isEmpty) return '?';
+    final names = name.split(' ');
+    if (names.length >= 2) {
+      return '${names[0][0]}${names[1][0]}'.toUpperCase();
+    }
+    return name[0].toUpperCase();
   }
 }
