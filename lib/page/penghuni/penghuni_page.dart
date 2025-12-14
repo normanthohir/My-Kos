@@ -331,7 +331,7 @@ class PenghuniPage extends StatelessWidget {
               ),
               child: Center(
                 child: Text(
-                  getInitials(namaPenghuni ?? ''),
+                  getInitials(namaPenghuni),
                   style: GoogleFonts.poppins(
                     fontSize: 28,
                     fontWeight: FontWeight.w700,

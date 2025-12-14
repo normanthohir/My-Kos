@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:may_kos/config/theme.dart';
 
 class DetailPenghuniDialog extends StatelessWidget {
   final Map<String, dynamic> penghuniData;
@@ -21,7 +22,7 @@ class DetailPenghuniDialog extends StatelessWidget {
       elevation: 0,
       backgroundColor: Colors.transparent,
       child: Container(
-        constraints: const BoxConstraints(maxWidth: 500),
+        constraints: BoxConstraints(maxWidth: 500),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(24),
@@ -42,8 +43,10 @@ class DetailPenghuniDialog extends StatelessWidget {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    colorScheme.primary,
-                    colorScheme.primary.withOpacity(0.8),
+                    colorsApp.primary,
+                    colorsApp.primary.withOpacity(0.8),
+                    // colorScheme.scrim,
+                    // colorScheme.scrim.withOpacity(0.8),
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
@@ -84,7 +87,7 @@ class DetailPenghuniDialog extends StatelessWidget {
                             style: GoogleFonts.poppins(
                               fontSize: 28,
                               fontWeight: FontWeight.w700,
-                              color: colorScheme.primary,
+                              color: colorsApp.primary,
                             ),
                           ),
                         ),
@@ -114,8 +117,8 @@ class DetailPenghuniDialog extends StatelessWidget {
                               ),
                               decoration: BoxDecoration(
                                 color: isAktif
-                                    ? Colors.green.withOpacity(0.2)
-                                    : Colors.red.withOpacity(0.2),
+                                    ? colorsApp.success
+                                    : colorsApp.error,
                                 borderRadius: BorderRadius.circular(20),
                                 border: Border.all(
                                   color: isAktif ? Colors.green : Colors.red,
@@ -127,7 +130,7 @@ class DetailPenghuniDialog extends StatelessWidget {
                                 style: GoogleFonts.poppins(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w600,
-                                  color: isAktif ? Colors.green : Colors.red,
+                                  color: Colors.white,
                                 ),
                               ),
                             ),
@@ -263,7 +266,7 @@ class DetailPenghuniDialog extends StatelessWidget {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        side: BorderSide(color: Colors.grey[300]!),
+                        side: BorderSide(color: Colors.grey[400]!),
                       ),
                       child: Text(
                         'Tutup',
@@ -287,7 +290,7 @@ class DetailPenghuniDialog extends StatelessWidget {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        backgroundColor: colorScheme.primary,
+                        backgroundColor: colorsApp.primary,
                         elevation: 0,
                       ),
                       child: Row(
@@ -332,13 +335,13 @@ class DetailPenghuniDialog extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+            color: colorsApp.primary.withOpacity(0.1),
             shape: BoxShape.circle,
           ),
           child: Icon(
             icon,
             size: 18,
-            color: Theme.of(context).colorScheme.primary,
+            color: colorsApp.primary,
           ),
         ),
         const SizedBox(width: 16),
