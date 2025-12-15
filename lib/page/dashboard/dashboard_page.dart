@@ -3,6 +3,7 @@ import 'package:iconsax/iconsax.dart';
 import 'package:may_kos/config/theme.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:may_kos/page/kamar/kamar_page.dart';
+import 'package:may_kos/page/pembayaran/pembayaran_page.dart';
 import 'package:may_kos/page/penghuni/penghuni_page.dart';
 
 class DashboardPage extends StatelessWidget {
@@ -571,7 +572,10 @@ class DashboardPage extends StatelessWidget {
         'title': 'Pembayaran',
         'subtitle': 'Input pembayaran',
         'color': colorsApp.warning,
-        'onTap': () {},
+        'onTap': () {
+          Navigator.push(context,
+              MaterialPageRoute(builder: (context) => PembayaranPage()));
+        },
       },
       {
         'icon': Iconsax.document_text,
