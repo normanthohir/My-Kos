@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:may_kos/config/theme.dart';
 import 'package:may_kos/widgets/widget_textFormField.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -144,8 +145,7 @@ class _PenghuniFormState extends State<PenghuniForm> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
-                backgroundColor:
-                    widget.isEditMode ? Colors.blue[700] : Colors.green[700],
+                backgroundColor: colorsApp.success,
               ),
             ),
           ),

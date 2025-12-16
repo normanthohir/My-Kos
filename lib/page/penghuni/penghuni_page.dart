@@ -4,6 +4,7 @@ import 'package:iconsax/iconsax.dart';
 import 'package:may_kos/config/theme.dart';
 import 'package:may_kos/page/penghuni/info_penghuni.dart';
 import 'package:may_kos/page/penghuni/penghuni_Form.dart';
+import 'package:may_kos/widgets/widget_Search.dart';
 import 'package:may_kos/widgets/widget_appBar.dart';
 
 class PenghuniPage extends StatelessWidget {
@@ -13,49 +14,14 @@ class PenghuniPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: colorsApp.background,
-      appBar: WidgetAppbar(
-        title: 'Data Penghuni',
-        actions: [
-          InkWell(
-            onTap: () {
-              showPenghuniModal(
-                context: context,
-                isEditMode: false,
-              );
-            },
-            child: Container(
-              decoration: BoxDecoration(
-                color: colorsApp.primary,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: const IconButton(
-                onPressed: null,
-                icon: Icon(
-                  Iconsax.user_add,
-                  color: colorsApp.background,
-                ),
-                tooltip: 'Tambah Penghuni',
-              ),
-            ),
-          ),
-          SizedBox(width: 13),
-        ],
-      ),
       body: Column(
         children: [
           Container(
             padding: const EdgeInsets.only(
-              top: 24,
-              left: 24,
-              right: 24,
-              bottom: 36,
+              top: 50,
+              left: 20,
+              right: 20,
+              bottom: 20,
             ),
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -67,79 +33,85 @@ class PenghuniPage extends StatelessWidget {
                 end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(30),
-                bottomRight: Radius.circular(30),
+                bottomLeft: Radius.circular(24),
+                bottomRight: Radius.circular(24),
               ),
               boxShadow: colorsApp.cardShadow,
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            child: Column(
               children: [
-                _buildCard(
-                  context,
-                  'Aktif',
-                  '20',
-                  Icons.person,
-                  Colors.green,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: Icon(
+                        Iconsax.arrow_left_1,
+                        color: Colors.white,
+                      ),
+                    ),
+                    Text(
+                      "Data Penghuni",
+                      style: GoogleFonts.poppins(
+                        color: Colors.white,
+                        fontSize: 20,
+                      ),
+                    ),
+                    Container(
+                      child: IconButton(
+                        onPressed: () {
+                          showPenghuniModal(
+                            context: context,
+                            isEditMode: false,
+                          );
+                        },
+                        icon: Icon(
+                          Iconsax.user_add,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                _buildCard(
-                  context,
-                  'Keluar',
-                  '5',
-                  Icons.logout,
-                  Colors.red,
-                ),
-                _buildCard(
-                  context,
-                  'Kamar',
-                  '8',
-                  Icons.hotel,
-                  Colors.purple,
-                ),
-                _buildCard(
-                  context,
-                  'Baru',
-                  '3',
-                  Icons.new_releases,
-                  Colors.red,
+                SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    _buildCard(
+                      context,
+                      'Aktif',
+                      '20',
+                      Icons.person,
+                      Colors.green,
+                    ),
+                    _buildCard(
+                      context,
+                      'Keluar',
+                      '5',
+                      Icons.logout,
+                      Colors.red,
+                    ),
+                    _buildCard(
+                      context,
+                      'Kamar',
+                      '8',
+                      Icons.hotel,
+                      Colors.purple,
+                    ),
+                    _buildCard(
+                      context,
+                      'Baru',
+                      '3',
+                      Icons.new_releases,
+                      Colors.red,
+                    ),
+                  ],
                 ),
               ],
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.all(20),
-            child: Container(
-              height: 50,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(15),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.6),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: TextField(
-                        decoration: InputDecoration(
-                          hintText: 'Cari penghuni...',
-                          border: InputBorder.none,
-                          hintStyle: TextStyle(color: Colors.grey[500]),
-                          icon: Icon(Icons.search, color: Colors.grey[500]),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+          // search....
+          WidgetSearch(title: 'Cari penghuni & kamar', onTap: () {}),
 
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
