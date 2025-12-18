@@ -110,6 +110,7 @@ class _PembayaranPageState extends State<PembayaranPage> {
                     ),
                   ],
                 ),
+
                 SizedBox(height: 20),
 
                 // Info Ringkasan
@@ -922,28 +923,4 @@ class _PembayaranPageState extends State<PembayaranPage> {
 }
 
 // Halaman Riwayat Pembayaran (Terpisah)
-class RiwayatPembayaranPage extends StatelessWidget {
-  const RiwayatPembayaranPage({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: colorsApp.background,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        foregroundColor: colorsApp.textPrimary,
-        elevation: 0,
-        title: Text(
-          'Riwayat Pembayaran',
-          style: GoogleFonts.poppins(
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        centerTitle: true,
-      ),
-      body: const Center(
-        child: Text('Halaman Riwayat Pembayaran'),
-      ),
-    );
-  }
-}

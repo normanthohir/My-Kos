@@ -4,8 +4,8 @@ import 'package:iconsax/iconsax.dart';
 import 'package:may_kos/config/theme.dart';
 import 'package:may_kos/page/penghuni/info_penghuni.dart';
 import 'package:may_kos/page/penghuni/penghuni_Form.dart';
+import 'package:may_kos/widgets/widgetApbarConten.dart';
 import 'package:may_kos/widgets/widget_Search.dart';
-import 'package:may_kos/widgets/widget_appBar.dart';
 
 class PenghuniPage extends StatelessWidget {
   const PenghuniPage({super.key});
@@ -16,96 +16,43 @@ class PenghuniPage extends StatelessWidget {
       backgroundColor: colorsApp.background,
       body: Column(
         children: [
-          Container(
-            padding: const EdgeInsets.only(
-              top: 50,
-              left: 20,
-              right: 20,
-              bottom: 20,
+          Widgetapbarconten(
+            title: 'Penghuni',
+            rightIcon: Iconsax.user_add,
+            onRightIconTap: () => showPenghuniModal(
+              context: context,
+              isEditMode: false,
             ),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  colorsApp.primary,
-                  colorsApp.primary.withOpacity(0.8),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(24),
-                bottomRight: Radius.circular(24),
-              ),
-              boxShadow: colorsApp.cardShadow,
-            ),
-            child: Column(
+            contain: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    IconButton(
-                      onPressed: () => Navigator.pop(context),
-                      icon: Icon(
-                        Iconsax.arrow_left_1,
-                        color: Colors.white,
-                      ),
-                    ),
-                    Text(
-                      "Data Penghuni",
-                      style: GoogleFonts.poppins(
-                        color: Colors.white,
-                        fontSize: 20,
-                      ),
-                    ),
-                    Container(
-                      child: IconButton(
-                        onPressed: () {
-                          showPenghuniModal(
-                            context: context,
-                            isEditMode: false,
-                          );
-                        },
-                        icon: Icon(
-                          Iconsax.user_add,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ],
+                _buildCard(
+                  context,
+                  'Aktif',
+                  '20',
+                  Icons.person,
+                  Colors.green,
                 ),
-                SizedBox(height: 20),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    _buildCard(
-                      context,
-                      'Aktif',
-                      '20',
-                      Icons.person,
-                      Colors.green,
-                    ),
-                    _buildCard(
-                      context,
-                      'Keluar',
-                      '5',
-                      Icons.logout,
-                      Colors.red,
-                    ),
-                    _buildCard(
-                      context,
-                      'Kamar',
-                      '8',
-                      Icons.hotel,
-                      Colors.purple,
-                    ),
-                    _buildCard(
-                      context,
-                      'Baru',
-                      '3',
-                      Icons.new_releases,
-                      Colors.red,
-                    ),
-                  ],
+                _buildCard(
+                  context,
+                  'Keluar',
+                  '5',
+                  Icons.logout,
+                  Colors.red,
+                ),
+                _buildCard(
+                  context,
+                  'Kamar',
+                  '8',
+                  Icons.hotel,
+                  Colors.purple,
+                ),
+                _buildCard(
+                  context,
+                  'Baru',
+                  '3',
+                  Icons.new_releases,
+                  Colors.red,
                 ),
               ],
             ),

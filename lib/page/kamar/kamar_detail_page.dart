@@ -45,13 +45,13 @@ class _KamarDetailPageState extends State<KamarDetailPage> {
         backgroundColor: Colors.white,
         foregroundColor: Colors.blue[800],
         elevation: 1,
-        // actions: [
-        //   // Tombol simpan di app bar
-        //   IconButton(
-        //     icon: const Icon(Icons.save),
-        //     onPressed: _saveRoom,
-        //   ),
-        // ],
+        actions: [
+          // // Tombol simpan di app bar
+          // IconButton(
+          //   icon: const Icon(Icons.save),
+          //   onPressed: _saveRoom,
+          // ),
+        ],
       ),
       body: SingleChildScrollView(
         child: Padding(

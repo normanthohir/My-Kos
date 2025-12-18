@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:may_kos/page/kamar/kamar_page.dart';
 import 'package:may_kos/page/pembayaran/pembayaran_page.dart';
 import 'package:may_kos/page/penghuni/penghuni_page.dart';
+import 'package:may_kos/page/riwayat_pembayaran/riwayat_pembayaran.dart';
 
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
@@ -582,7 +583,10 @@ class DashboardPage extends StatelessWidget {
         'title': 'Riwayat',
         'subtitle': 'Lihat riwayat bayar',
         'color': colorsApp.info,
-        'onTap': () {},
+        'onTap': () {
+          Navigator.push(context,
+              MaterialPageRoute(builder: (context) => RiwayatPembayaranPage()));
+        },
       },
       {
         'icon': Iconsax.chart_2,

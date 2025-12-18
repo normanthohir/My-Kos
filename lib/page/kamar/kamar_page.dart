@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:iconsax/iconsax.dart';
+import 'package:may_kos/config/theme.dart';
 import 'package:may_kos/page/kamar/kamar_detail_page.dart';
+import 'package:may_kos/widgets/widgetApbarConten.dart';
 
 class KamarPage extends StatefulWidget {
   const KamarPage({Key? key}) : super(key: key);
@@ -52,51 +56,39 @@ class _KamarPageState extends State<KamarPage> {
 
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      appBar: AppBar(
-        title: const Text(
-          'Daftar Kamar',
-          style: TextStyle(
-            fontWeight: FontWeight.w600,
-            fontSize: 20,
-          ),
-        ),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.blue[800],
-        elevation: 1,
-        centerTitle: true,
-      ),
       body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            padding: const EdgeInsets.all(16),
-            color: Colors.white,
+          Widgetapbarconten(
+            title: 'Daftar Kamar',
+            rightIcon: Iconsax.add_circle,
+            onRightIconTap: () => _navigateToRoomDetail(null, -1),
+            contain: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildStatCard(
+                  'Total',
+                  '$totalRooms',
+                ),
+                _buildStatCard(
+                  'Terisi',
+                  '$occupiedRooms',
+                ),
+                _buildStatCard(
+                  'Kosong',
+                  '$availableRooms',
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(top: 18, left: 18),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    _buildStatCard(
-                      'Total Kamar',
-                      '$totalRooms',
-                      Colors.blue[800]!,
-                    ),
-                    _buildStatCard(
-                      'Terisi',
-                      '$occupiedRooms',
-                      Colors.orange[700]!,
-                    ),
-                    _buildStatCard(
-                      'Kosong',
-                      '$availableRooms',
-                      Colors.green[700]!,
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
                 Text(
                   'Filter Status:',
-                  style: TextStyle(
+                  style: GoogleFonts.poppins(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
                     color: Colors.grey[700],
@@ -139,14 +131,6 @@ class _KamarPageState extends State<KamarPage> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Navigasi ke halaman detail untuk menambah kamar baru
-          _navigateToRoomDetail(null, -1);
-        },
-        backgroundColor: Colors.blue[800],
-        child: const Icon(Icons.add, color: Colors.white),
-      ),
     );
   }
 
@@ -177,32 +161,35 @@ class _KamarPageState extends State<KamarPage> {
     }
   }
 
-  Widget _buildStatCard(String title, String value, Color color) {
+  Widget _buildStatCard(
+    String title,
+    String value,
+  ) {
     return Container(
       width: 100,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: Colors.white.withOpacity(0.20),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.3), width: 1),
+        border: Border.all(color: Colors.white.withOpacity(0.1), width: 1),
       ),
       child: Column(
         children: [
           Text(
             title,
-            style: TextStyle(
-              fontSize: 12,
+            style: GoogleFonts.poppins(
+              fontSize: 13,
               fontWeight: FontWeight.w500,
-              color: color,
+              color: Colors.white.withOpacity(0.9),
             ),
           ),
           const SizedBox(height: 4),
           Text(
             value,
-            style: TextStyle(
+            style: GoogleFonts.poppins(
               fontSize: 24,
               fontWeight: FontWeight.w700,
-              color: color,
+              color: Colors.white,
             ),
           ),
         ],
@@ -214,8 +201,8 @@ class _KamarPageState extends State<KamarPage> {
     return ChoiceChip(
       label: Text(label),
       selected: isSelected,
-      selectedColor: Colors.blue[800],
-      labelStyle: TextStyle(
+      selectedColor: colorsApp.primary,
+      labelStyle: GoogleFonts.poppins(
         color: isSelected ? Colors.white : Colors.grey[700],
         fontWeight: FontWeight.w500,
       ),
@@ -245,7 +232,9 @@ class _KamarPageState extends State<KamarPage> {
           Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
-              color: room.isOccupied ? Colors.red[50] : Colors.green[50],
+              color: room.isOccupied
+                  ? colorsApp.error.withOpacity(0.15)
+                  : colorsApp.success.withOpacity(0.15),
             ),
           ),
           Padding(
@@ -255,7 +244,7 @@ class _KamarPageState extends State<KamarPage> {
               children: [
                 Text(
                   'Kamar',
-                  style: TextStyle(
+                  style: GoogleFonts.poppins(
                     fontSize: 12,
                     color: Colors.grey[600],
                     fontWeight: FontWeight.w500,
@@ -263,7 +252,7 @@ class _KamarPageState extends State<KamarPage> {
                 ),
                 Text(
                   room.roomNumber,
-                  style: const TextStyle(
+                  style: GoogleFonts.poppins(
                     fontSize: 28,
                     fontWeight: FontWeight.w700,
                     color: Colors.black87,
@@ -280,10 +269,10 @@ class _KamarPageState extends State<KamarPage> {
                     const SizedBox(width: 6),
                     Text(
                       room.roomType,
-                      style: TextStyle(
+                      style: GoogleFonts.poppins(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
-                        color: Colors.blue[800],
+                        color: colorsApp.primary,
                       ),
                     ),
                   ],
@@ -293,8 +282,9 @@ class _KamarPageState extends State<KamarPage> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color:
-                        room.isOccupied ? Colors.red[100] : Colors.green[100],
+                    color: room.isOccupied
+                        ? colorsApp.error.withOpacity(0.12)
+                        : colorsApp.success.withOpacity(0.12),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Row(
@@ -306,19 +296,19 @@ class _KamarPageState extends State<KamarPage> {
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color: room.isOccupied
-                              ? Colors.red[600]
-                              : Colors.green[600],
+                              ? colorsApp.error
+                              : colorsApp.success,
                         ),
                       ),
                       const SizedBox(width: 6),
                       Text(
                         room.isOccupied ? 'Terisi' : 'Kosong',
-                        style: TextStyle(
+                        style: GoogleFonts.poppins(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
                           color: room.isOccupied
-                              ? Colors.red[800]
-                              : Colors.green[800],
+                              ? colorsApp.error
+                              : colorsApp.success,
                         ),
                       ),
                     ],
