@@ -719,6 +719,15 @@ class _RiwayatPembayaranPageState extends State<RiwayatPembayaranPage> {
         );
   }
 
+  String getInitials(String name) {
+    if (name.isEmpty) return '?';
+    final names = name.split(' ');
+    if (names.length >= 2) {
+      return '${names[0][0]}${names[1][0]}'.toUpperCase();
+    }
+    return name[0].toUpperCase();
+  }
+
   void _showDetailRiwayat(BuildContext context, Map<String, dynamic> riwayat) {
     showModalBottomSheet(
       context: context,

@@ -3,6 +3,7 @@ import 'package:iconsax/iconsax.dart';
 import 'package:may_kos/config/theme.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:may_kos/page/kamar/kamar_page.dart';
+import 'package:may_kos/page/laporan/laporan_page.dart';
 import 'package:may_kos/page/pembayaran/pembayaran_page.dart';
 import 'package:may_kos/page/penghuni/penghuni_page.dart';
 import 'package:may_kos/page/riwayat_pembayaran/riwayat_pembayaran.dart';
@@ -593,7 +594,10 @@ class DashboardPage extends StatelessWidget {
         'title': 'Laporan',
         'subtitle': 'Analisis keuangan',
         'color': colorsApp.secondary,
-        'onTap': () {},
+        'onTap': () {
+          Navigator.push(
+              context, MaterialPageRoute(builder: (context) => LaporanPage()));
+        },
       },
       {
         'icon': Iconsax.setting_2,

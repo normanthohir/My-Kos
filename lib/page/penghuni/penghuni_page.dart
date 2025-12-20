@@ -7,8 +7,53 @@ import 'package:may_kos/page/penghuni/penghuni_Form.dart';
 import 'package:may_kos/widgets/widgetApbarConten.dart';
 import 'package:may_kos/widgets/widget_Search.dart';
 
-class PenghuniPage extends StatelessWidget {
+class PenghuniPage extends StatefulWidget {
   const PenghuniPage({super.key});
+
+  @override
+  State<PenghuniPage> createState() => _PenghuniPageState();
+}
+
+class _PenghuniPageState extends State<PenghuniPage> {
+  final List<Map<String, dynamic>> _penghuniList = [];
+
+  void _loadDumydata() {
+    _penghuniList.addAll([
+      {
+        'id': 1,
+        'nama': 'Siti Milaa',
+        'status': true,
+        'kamar': '012',
+        'no_hp': '081256151551',
+        'tgl_masuk': '30-05-2024',
+        'tgl_keluar': ''
+      },
+      {
+        'id': 2,
+        'nama': 'Ahmad Fauzi',
+        'status': true,
+        'kamar': '022',
+        'no_hp': '081156157878',
+        'tgl_masuk': '30-05-2024',
+        'tgl_keluar': ''
+      },
+      {
+        'id': 3,
+        'nama': 'Reza Maulana',
+        'kamar': '011',
+      },
+      {
+        'id': 4,
+        'nama': 'Swisto Bagus',
+        'kamar': '002',
+      },
+      {
+        'id': 5,
+        'nama': 'Siti Milaa',
+        'kamar': '012',
+      },
+    ]);
+  }
 
   @override
   Widget build(BuildContext context) {
