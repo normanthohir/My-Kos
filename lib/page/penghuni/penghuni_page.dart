@@ -40,17 +40,29 @@ class _PenghuniPageState extends State<PenghuniPage> {
       {
         'id': 3,
         'nama': 'Reza Maulana',
+        'status': false,
         'kamar': '011',
+        'no_hp': '081256151551',
+        'tgl_masuk': '30-05-2025',
+        'tgl_keluar': '10-12-2025'
       },
       {
         'id': 4,
         'nama': 'Swisto Bagus',
+        'status': false,
         'kamar': '002',
+        'no_hp': '081256151551',
+        'tgl_masuk': '20-01-2025',
+        'tgl_keluar': '01-08-2025'
       },
       {
         'id': 5,
         'nama': 'Siti Milaa',
+        'status': true,
         'kamar': '012',
+        'no_hp': '081256151551',
+        'tgl_masuk': '30-05-2024',
+        'tgl_keluar': ''
       },
     ]);
   }
