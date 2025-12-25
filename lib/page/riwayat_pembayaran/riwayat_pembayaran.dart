@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:may_kos/config/theme.dart';
+import 'package:may_kos/page/empty_page/empty_page.dart';
 
 class RiwayatPembayaranPage extends StatefulWidget {
   const RiwayatPembayaranPage({super.key});
@@ -212,38 +213,7 @@ class _RiwayatPembayaranPageState extends State<RiwayatPembayaranPage> {
                   ),
                 ),
 
-                const SizedBox(height: 16),
-
                 // Filter tabs
-                Container(
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: colorsApp.background,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: _buildFilterTab(
-                          label: 'Semua',
-                          value: 'semua',
-                        ),
-                      ),
-                      Expanded(
-                        child: _buildFilterTab(
-                          label: 'Bulan Ini',
-                          value: 'bulan-ini',
-                        ),
-                      ),
-                      Expanded(
-                        child: _buildFilterTab(
-                          label: 'Tahun Ini',
-                          value: 'tahun-ini',
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
               ],
             ),
           ),
@@ -313,10 +283,38 @@ class _RiwayatPembayaranPageState extends State<RiwayatPembayaranPage> {
             ),
           ),
 
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Row(
+              children: [
+                Expanded(
+                  child: _buildFilterTab(
+                    label: 'Semua',
+                    value: 'semua',
+                  ),
+                ),
+                Expanded(
+                  child: _buildFilterTab(
+                    label: 'Bulan Ini',
+                    value: 'bulan-ini',
+                  ),
+                ),
+                Expanded(
+                  child: _buildFilterTab(
+                    label: 'Tahun Ini',
+                    value: 'tahun-ini',
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          SizedBox(height: 20),
+
           // List Riwayat
           Expanded(
             child: filteredList.isEmpty
-                ? _buildEmptyState()
+                ? EmptyPage()
                 : ListView.separated(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     itemCount: filteredList.length,
@@ -346,10 +344,14 @@ class _RiwayatPembayaranPageState extends State<RiwayatPembayaranPage> {
       },
       borderRadius: BorderRadius.circular(10),
       child: Container(
-        margin: const EdgeInsets.all(4),
+        height: 35,
+        margin: EdgeInsets.all(4),
         decoration: BoxDecoration(
           color: isSelected ? colorsApp.primary : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: isSelected ? Colors.transparent : colorsApp.textTertiary,
+          ),
         ),
         child: Center(
           child: Text(
@@ -625,50 +627,6 @@ class _RiwayatPembayaranPageState extends State<RiwayatPembayaranPage> {
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 120,
-            height: 120,
-            decoration: BoxDecoration(
-              color: colorsApp.background,
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              Iconsax.receipt_search,
-              size: 50,
-              color: colorsApp.textTertiary.withOpacity(0.5),
-            ),
-          ),
-          const SizedBox(height: 24),
-          Text(
-            'Tidak Ada Riwayat',
-            style: GoogleFonts.poppins(
-              fontSize: 20,
-              fontWeight: FontWeight.w600,
-              color: colorsApp.textPrimary,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 40),
-            child: Text(
-              'Riwayat pembayaran akan muncul setelah ada pembayaran',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.poppins(
-                fontSize: 14,
-                color: colorsApp.textTertiary,
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 

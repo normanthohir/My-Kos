@@ -81,8 +81,9 @@ class _KamarPageState extends State<KamarPage> {
               ],
             ),
           ),
+          SizedBox(height: 16),
           Padding(
-            padding: const EdgeInsets.only(top: 18, left: 18),
+            padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -95,12 +96,17 @@ class _KamarPageState extends State<KamarPage> {
                   ),
                 ),
                 const SizedBox(height: 8),
-                Wrap(
-                  spacing: 8,
+                Row(
                   children: [
-                    _buildFilterChip('Semua', filterStatus == 'Semua'),
-                    _buildFilterChip('Kosong', filterStatus == 'Kosong'),
-                    _buildFilterChip('Terisi', filterStatus == 'Terisi'),
+                    Expanded(
+                      child: _buildFilterTap('Semua', filterStatus == 'Semua'),
+                    ),
+                    Expanded(
+                        child: _buildFilterTap(
+                            'Kosong', filterStatus == 'Kosong')),
+                    Expanded(
+                        child: _buildFilterTap(
+                            'Terisi', filterStatus == 'Terisi')),
                   ],
                 ),
               ],
@@ -197,20 +203,36 @@ class _KamarPageState extends State<KamarPage> {
     );
   }
 
-  Widget _buildFilterChip(String label, bool isSelected) {
-    return ChoiceChip(
-      label: Text(label),
-      selected: isSelected,
-      selectedColor: colorsApp.primary,
-      labelStyle: GoogleFonts.poppins(
-        color: isSelected ? Colors.white : Colors.grey[700],
-        fontWeight: FontWeight.w500,
-      ),
-      onSelected: (selected) {
+  Widget _buildFilterTap(String label, bool isSelected) {
+    // final isSelected = filterStatus == isSelected;
+    return InkWell(
+      onTap: () {
         setState(() {
           filterStatus = label;
         });
       },
+      borderRadius: BorderRadius.circular(10),
+      child: Container(
+        height: 35,
+        margin: EdgeInsets.all(4),
+        decoration: BoxDecoration(
+          color: isSelected ? colorsApp.primary : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: isSelected ? Colors.transparent : colorsApp.textTertiary,
+          ),
+        ),
+        child: Center(
+          child: Text(
+            label,
+            style: GoogleFonts.poppins(
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: isSelected ? Colors.white : colorsApp.textTertiary,
+            ),
+          ),
+        ),
+      ),
     );
   }
 

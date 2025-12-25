@@ -23,7 +23,7 @@ class _LaporanPageState extends State<LaporanPage> {
 
   // Data dummy untuk laporan
   final ReportData reportData = ReportData(
-    period: 'April 2024',
+    period: 'April 2025',
     totalRooms: 15,
     occupiedRooms: 10,
     availableRooms: 5,

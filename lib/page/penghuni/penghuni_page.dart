@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:may_kos/config/theme.dart';
+import 'package:may_kos/page/empty_page/empty_page.dart';
 import 'package:may_kos/page/penghuni/info_penghuni.dart';
 import 'package:may_kos/page/penghuni/penghuni_Form.dart';
 import 'package:may_kos/widgets/widgetApbarConten.dart';
@@ -15,9 +16,26 @@ class PenghuniPage extends StatefulWidget {
 }
 
 class _PenghuniPageState extends State<PenghuniPage> {
-  final List<Map<String, dynamic>> _penghuniList = [];
+  // Logika untuk memfilter data berdasarkan tombol yang dipilih
+  List<Map<String, dynamic>> get _filteredPenghuni {
+    if (_selectedFilter == null) {
+      return _penghuniList;
+    }
+    // Filter list berdasarkan status true/false
+    return _penghuniList.where((penghuni) {
+      return penghuni['status'] == _selectedFilter;
+    }).toList();
+  }
 
-  void _loadDumydata() {
+  Object? _selectedFilter = null; // Default: Semua
+  List<Map<String, dynamic>> _penghuniList = [];
+
+  void initState() {
+    super.initState();
+    _loadDummyData();
+  }
+
+  void _loadDummyData() {
     _penghuniList.addAll([
       {
         'id': 1,
@@ -69,6 +87,7 @@ class _PenghuniPageState extends State<PenghuniPage> {
 
   @override
   Widget build(BuildContext context) {
+    // final filteredList = _filterPenghuni(_penghuniList);
     return Scaffold(
       backgroundColor: colorsApp.background,
       body: Column(
@@ -118,80 +137,38 @@ class _PenghuniPageState extends State<PenghuniPage> {
           WidgetSearch(title: 'Cari penghuni & kamar', onTap: () {}),
 
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Row(
-              children: [
-                Expanded(child: _buildStatusTab('Semua', true)),
-                SizedBox(width: 10),
-                Expanded(child: _buildStatusTab('Aktif', false)),
-                SizedBox(width: 10),
-                Expanded(child: _buildStatusTab('Keluar', false)),
-              ],
-            ),
-          ),
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Row(
+                children: [
+                  _buildStatusTab(label: 'Semua', isAktif: null),
+                  _buildStatusTab(label: 'Aktif', isAktif: true),
+                  _buildStatusTab(label: 'Keluar', isAktif: false),
+                ],
+              )),
           const SizedBox(height: 20),
 
           // List Penghun
 
           Expanded(
-            child: ListView.builder(
-              itemCount: 1,
-              itemBuilder: (context, index) {
-                return Column(
-                  children: [
-                    _buildcardPenghuni(
-                      1,
-                      'Siti Milaa',
-                      true,
-                      '08012677126',
-                      '101',
-                      '12 03 2024',
-                      '',
-                    ),
-                    _buildcardPenghuni(
-                      2,
-                      'Ahmad Fauzi',
-                      false,
-                      '08012677126',
-                      '102',
-                      '12 06 2024',
-                      '20 04 2025',
-                    ),
-                    _buildcardPenghuni(
-                      3,
-                      'Reza Maulana',
-                      true,
-                      '434398439894',
-                      '201',
-                      '12 04 2024',
-                      '',
-                    ),
-                    _buildcardPenghuni(
-                      4,
-                      'Swisto Bagus',
-                      false,
-                      '080126778376',
-                      '202',
-                      '12 04 2024',
-                      '10 05 2025',
-                    ),
-                  ],
-                );
-              },
-            ),
+            child: _filteredPenghuni
+                    .isEmpty // Menggunakan list yang sudah difilter
+                ? EmptyPage() // Jika hasil filter kosong (misal: tidak ada yang 'Keluar')
+                : ListView.builder(
+                    padding: EdgeInsets.only(bottom: 16),
+                    itemCount: _filteredPenghuni.length,
+                    itemBuilder: (context, index) {
+                      final penghuni = _filteredPenghuni[index];
+                      return _buildcardPenghuni(penghuni);
+                    },
+                  ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildCard(
-    BuildContext context,
-    String title,
-    String value,
-    IconData icon,
-    Color color,
-  ) {
+  Widget _buildCard(BuildContext context, String title, String value,
+      IconData icon, Color color) {
     return Container(
       width: MediaQuery.of(context).size.width * 0.2,
       padding: const EdgeInsets.all(12),
@@ -238,45 +215,51 @@ class _PenghuniPageState extends State<PenghuniPage> {
   }
 
 // tap status penghuni
-  Widget _buildStatusTab(String label, bool isActive) {
-    return Container(
-      height: 40,
-      decoration: BoxDecoration(
-        color: isActive ? Colors.blue[800] : Colors.white,
+
+  Widget _buildStatusTab({
+    required String label,
+    required bool? isAktif,
+  }) {
+    final isSelected = _selectedFilter == isAktif;
+
+    return Expanded(
+      // Bungkus di sini agar proporsinya sama di dalam Row
+      child: InkWell(
+        onTap: () {
+          setState(() {
+            _selectedFilter = isAktif;
+          });
+        },
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: isActive ? Colors.blue[800]! : Colors.grey[500]!,
+        child: AnimatedContainer(
+          // Gunakan AnimatedContainer agar lebih smooth
+          duration: const Duration(milliseconds: 200),
+          height: 35, // Sedikit lebih tinggi agar teks tidak terlalu sesak
+          margin: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            color: isSelected ? colorsApp.primary : Colors.transparent,
+            borderRadius: BorderRadius.circular(8),
+            // Tambahkan border tipis saat tidak terpilih agar terlihat seperti tombol
+            border: Border.all(
+              color: isSelected ? Colors.transparent : colorsApp.textTertiary,
+            ),
+          ),
+          child: Center(
+            child: Text(
+              label,
+              style: GoogleFonts.poppins(
+                fontSize: 13,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                color: isSelected ? Colors.white : colorsApp.textTertiary,
+              ),
+            ),
+          ),
         ),
-        boxShadow: isActive
-            ? [
-                BoxShadow(
-                  color: Colors.blue[800]!.withOpacity(0.3),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ]
-            : null,
-      ),
-      child: Center(
-        child: Text(label,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: isActive ? Colors.white : Colors.grey[600],
-            )),
       ),
     );
   }
 
-  Widget _buildcardPenghuni(
-    int Id,
-    String namaPenghuni,
-    bool statusPenghuni,
-    String nomorTelepon,
-    String kamarPenghuni,
-    String tanggalMasuk,
-    String tanggalKeluar,
-  ) {
+  Widget _buildcardPenghuni(Map<String, dynamic> penghuni) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       decoration: BoxDecoration(
@@ -307,7 +290,7 @@ class _PenghuniPageState extends State<PenghuniPage> {
               ),
               child: Center(
                 child: Text(
-                  getInitials(namaPenghuni),
+                  getInitials(penghuni['nama']),
                   style: GoogleFonts.poppins(
                     fontSize: 28,
                     fontWeight: FontWeight.w700,
@@ -327,7 +310,7 @@ class _PenghuniPageState extends State<PenghuniPage> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        namaPenghuni,
+                        penghuni['nama'],
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -340,12 +323,12 @@ class _PenghuniPageState extends State<PenghuniPage> {
                           vertical: 2,
                         ),
                         decoration: BoxDecoration(
-                          color: statusPenghuni
+                          color: penghuni['status']
                               ? Colors.green[50]
                               : Colors.red[50],
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
-                            color: statusPenghuni
+                            color: penghuni['status']
                                 ? Colors.green[100]!
                                 : Colors.red[100]!,
                           ),
@@ -357,17 +340,17 @@ class _PenghuniPageState extends State<PenghuniPage> {
                               height: 8,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                color: statusPenghuni
+                                color: penghuni['status']
                                     ? Colors.green[400]
                                     : Colors.red[400],
                               ),
                             ),
                             const SizedBox(width: 4),
                             Text(
-                              statusPenghuni ? 'Aktif' : 'Keluar',
+                              penghuni['status'] ? 'Aktif' : 'Keluar',
                               style: TextStyle(
                                 fontSize: 12,
-                                color: statusPenghuni
+                                color: penghuni['status']
                                     ? Colors.green[800]
                                     : Colors.red,
                                 fontWeight: FontWeight.w600,
@@ -388,7 +371,7 @@ class _PenghuniPageState extends State<PenghuniPage> {
                       ),
                       const SizedBox(width: 6),
                       Text(
-                        nomorTelepon,
+                        penghuni['no_hp'],
                         style: TextStyle(
                           fontSize: 13,
                           color: Colors.grey[700],
@@ -407,7 +390,7 @@ class _PenghuniPageState extends State<PenghuniPage> {
                       ),
                       const SizedBox(width: 6),
                       Text(
-                        "Kamar $kamarPenghuni",
+                        "Kamar ${penghuni['kamar']}",
                         style: TextStyle(
                           fontSize: 13,
                           color: Colors.grey[600],
@@ -427,14 +410,14 @@ class _PenghuniPageState extends State<PenghuniPage> {
                       ),
                       const SizedBox(width: 6),
                       Text(
-                        'Masuk: $tanggalMasuk ',
+                        "Masuk: ${penghuni['tgl_masuk']}",
                         style: TextStyle(
                           fontSize: 12,
                           color: Colors.grey[700],
                           fontWeight: FontWeight.w500,
                         ),
                       ),
-                      statusPenghuni
+                      penghuni['status']
                           ? const Text('')
                           : Row(
                               children: [
@@ -446,7 +429,7 @@ class _PenghuniPageState extends State<PenghuniPage> {
                                 ),
                                 SizedBox(width: 1),
                                 Text(
-                                  '$tanggalKeluar',
+                                  penghuni['tgl_keluar'],
                                   style: TextStyle(
                                     fontSize: 12,
                                     color: Colors.grey[700],
@@ -476,12 +459,12 @@ class _PenghuniPageState extends State<PenghuniPage> {
                       showDetailPenghuniDialogWithAnimation(
                         context: context,
                         penghuniData: {
-                          'id': Id,
-                          'nama': namaPenghuni,
-                          'nomorTelepon': nomorTelepon,
-                          'kamar': kamarPenghuni,
-                          'tanggalMasuk': tanggalMasuk,
-                          'tanggalKeluar': tanggalKeluar,
+                          'id': penghuni['id'],
+                          'nama': penghuni['nama'],
+                          'nomorTelepon': penghuni['no_hp'],
+                          'kamar': penghuni['kamar'],
+                          'tanggalMasuk': penghuni['tgl_masuk'],
+                          'tanggalKeluar': penghuni['tgl_keluar'],
                         },
                       );
                     });
@@ -495,7 +478,7 @@ class _PenghuniPageState extends State<PenghuniPage> {
                     ],
                   ),
                 ),
-                if (statusPenghuni)
+                if (penghuni['status'])
                   PopupMenuItem<String>(
                     value: 'edit',
                     child: Row(
@@ -508,11 +491,11 @@ class _PenghuniPageState extends State<PenghuniPage> {
                     onTap: () {
                       // Data penghuni yang akan diedit (contoh)
                       Map<String, dynamic> penghuniData = {
-                        'id': Id,
-                        'nama': namaPenghuni,
-                        'nomorTelepon': nomorTelepon,
-                        'kamar': kamarPenghuni,
-                        'tanggalMasuk': tanggalMasuk,
+                        'id': penghuni['id'],
+                        'nama': penghuni['nama'],
+                        'nomorTelepon': penghuni['no_hp'],
+                        'kamar': penghuni['kamar'],
+                        'tanggalMasuk': penghuni['tgl_masuk'],
                       };
 
                       showPenghuniModal(
@@ -522,7 +505,7 @@ class _PenghuniPageState extends State<PenghuniPage> {
                       );
                     },
                   ),
-                statusPenghuni
+                penghuni['status']
                     ? const PopupMenuItem(
                         value: 'keluar',
                         child: Row(
