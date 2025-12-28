@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:iconsax/iconsax.dart';
+import 'package:may_kos/config/theme.dart';
 import 'package:may_kos/page/laporan/model_report.dart';
+import 'package:may_kos/widgets/widgetApbarConten.dart';
+import 'package:may_kos/widgets/widget_appBar.dart';
 
 class LaporanPage extends StatefulWidget {
   const LaporanPage({Key? key}) : super(key: key);
@@ -90,121 +94,129 @@ class _LaporanPageState extends State<LaporanPage> {
       ),
     ],
   );
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
-      body: CustomScrollView(
-        slivers: [
-          // AppBar dengan gradient
-          SliverAppBar(
-            expandedHeight: 180,
-            floating: false,
-            pinned: true,
-            flexibleSpace: FlexibleSpaceBar(
-              title: const Text(
-                'Laporan & Analitik',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                ),
-              ),
-              background: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Colors.blue[800]!,
-                      Colors.purple[700]!,
-                    ],
-                  ),
-                ),
-                child: Padding(
-                  padding:
-                      const EdgeInsets.only(bottom: 16, left: 20, right: 20),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 40),
-                      Text(
-                        'Ringkasan ${reportData.period}',
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Colors.white70,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Rp ${_formatCurrency(reportData.totalIncome)}',
-                        style: const TextStyle(
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Total Pendapatan',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.white.withOpacity(0.8),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            actions: [
-              // Tombol export
-              IconButton(
-                onPressed: _exportReport,
-                icon: const Icon(Icons.download, color: Colors.white),
-                tooltip: 'Export Laporan',
-              ),
-              // Tombol filter
-              IconButton(
-                onPressed: _showFilterDialog,
-                icon: const Icon(Icons.filter_list, color: Colors.white),
-                tooltip: 'Filter',
-              ),
-            ],
-          ),
-
-          // Konten utama
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                children: [
-                  // Statistik utama
-                  _buildMainStats(),
-                  const SizedBox(height: 24),
-
-                  // Grafik tren
-                  _buildTrendChart(),
-                  const SizedBox(height: 24),
-
-                  // Kamar terpopuler
-                  _buildTopRooms(),
-                  const SizedBox(height: 24),
-
-                  // Aktivitas terkini
-                  _buildRecentActivities(),
-                  const SizedBox(height: 24),
-
-                  // Laporan detail
-                  _buildDetailedReport(),
-                ],
-              ),
-            ),
+      backgroundColor: colorsApp.background,
+      body: Column(
+        children: [
+          Widgetapbarconten(
+            title: 'Laporan',
           ),
         ],
       ),
+
+      // CustomScrollView(
+
+      //   slivers: [
+      //     // AppBar
+      //     SliverAppBar(
+      //       expandedHeight: 180,
+      //       floating: false,
+      //       pinned: true,
+      //       flexibleSpace: FlexibleSpaceBar(
+      //         title: const Text(
+      //           'Laporan & Analitik',
+      //           style: TextStyle(
+      //             fontSize: 20,
+      //             fontWeight: FontWeight.w600,
+      //             color: Colors.white,
+      //           ),
+      //         ),
+      //         background: Container(
+      //           decoration: BoxDecoration(
+      //             gradient: LinearGradient(
+      //               begin: Alignment.topLeft,
+      //               end: Alignment.bottomRight,
+      //               colors: [
+      //                 colorsApp.primary,
+      //                 colorsApp.primary.withOpacity(0.8),
+      //               ],
+      //             ),
+      //           ),
+      //           child: Padding(
+      //             padding:
+      //                 const EdgeInsets.only(bottom: 16, left: 20, right: 20),
+      //             child: Column(
+      //               mainAxisAlignment: MainAxisAlignment.end,
+      //               crossAxisAlignment: CrossAxisAlignment.start,
+      //               children: [
+      //                 const SizedBox(height: 40),
+      //                 Text(
+      //                   'Ringkasan ${reportData.period}',
+      //                   style: const TextStyle(
+      //                     fontSize: 14,
+      //                     color: Colors.white70,
+      //                   ),
+      //                 ),
+      //                 const SizedBox(height: 8),
+      //                 Text(
+      //                   'Rp ${_formatCurrency(reportData.totalIncome)}',
+      //                   style: const TextStyle(
+      //                     fontSize: 32,
+      //                     fontWeight: FontWeight.bold,
+      //                     color: Colors.white,
+      //                   ),
+      //                 ),
+      //                 const SizedBox(height: 8),
+      //                 Text(
+      //                   'Total Pendapatan',
+      //                   style: TextStyle(
+      //                     fontSize: 14,
+      //                     color: Colors.white.withOpacity(0.8),
+      //                   ),
+      //                 ),
+      //               ],
+      //             ),
+      //           ),
+      //         ),
+      //       ),
+      //       actions: [
+      //         // Tombol export
+      //         IconButton(
+      //           onPressed: _exportReport,
+      //           icon: const Icon(Icons.download, color: Colors.white),
+      //           tooltip: 'Export Laporan',
+      //         ),
+      //         // Tombol filter
+      //         IconButton(
+      //           onPressed: _showFilterDialog,
+      //           icon: const Icon(Icons.filter_list, color: Colors.white),
+      //           tooltip: 'Filter',
+      //         ),
+      //       ],
+      //     ),
+
+      //     // Konten utama
+      //     SliverToBoxAdapter(
+      //       child: Padding(
+      //         padding: const EdgeInsets.all(20),
+      //         child: Column(
+      //           children: [
+      //             // Statistik utama
+      //             _buildMainStats(),
+      //             const SizedBox(height: 24),
+
+      //             // Grafik tren
+      //             _buildTrendChart(),
+      //             const SizedBox(height: 24),
+
+      //             // Kamar terpopuler
+      //             _buildTopRooms(),
+      //             const SizedBox(height: 24),
+
+      //             // Aktivitas terkini
+      //             _buildRecentActivities(),
+      //             const SizedBox(height: 24),
+
+      //             // Laporan detail
+      //             _buildDetailedReport(),
+      //           ],
+      //         ),
+      //       ),
+      //     ),
+      //   ],
+      // ),
 
       // Floating Action Button untuk refresh
       floatingActionButton: FloatingActionButton(
