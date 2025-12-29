@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:may_kos/config/theme.dart';
 import 'package:may_kos/page/kamar/kamar_page.dart';
 
 class KamarDetailPage extends StatefulWidget {
@@ -330,6 +331,35 @@ class _KamarDetailPageState extends State<KamarDetailPage> {
                   ),
                 ],
               ),
+              SizedBox(height: 20),
+              isEditMode
+                  ? isOccupied
+                      ? Container()
+                      : Row(
+                          children: [
+                            Expanded(
+                              child: ElevatedButton(
+                                onPressed: _deleteRoom,
+                                style: ElevatedButton.styleFrom(
+                                  padding: EdgeInsets.symmetric(vertical: 16),
+                                  backgroundColor: colorsApp.error,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                child: const Text(
+                                  'hapus kamar',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        )
+                  : Container()
             ],
           ),
         ),
@@ -348,7 +378,6 @@ class _KamarDetailPageState extends State<KamarDetailPage> {
       );
       return;
     }
-
     // Buat objek Room baru dengan data dari form
     Room newRoom = Room(
       roomNumber: roomNumberController.text,
@@ -359,6 +388,10 @@ class _KamarDetailPageState extends State<KamarDetailPage> {
 
     // Kembalikan ke halaman sebelumnya dengan data kamar baru
     Navigator.pop(context, newRoom);
+  }
+
+  void _deleteRoom() {
+    Navigator.pop(context, 'delete');
   }
 
   @override

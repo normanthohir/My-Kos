@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class SharedTextFormField extends StatelessWidget {
@@ -14,22 +15,23 @@ class SharedTextFormField extends StatelessWidget {
   final bool alignLabelWithHint;
   final int? maxLines;
   final AutovalidateMode? autovalidateMode;
+  final List<TextInputFormatter>? inputFormatters;
 
-  const SharedTextFormField({
-    super.key,
-    required this.Controller,
-    required this.labelText,
-    this.readOnly = false,
-    this.onTap,
-    this.obsecureText = false,
-    this.validator,
-    this.suffixIcon,
-    this.prefixIcon,
-    this.keyboardType,
-    this.alignLabelWithHint = false,
-    this.maxLines = 1,
-    this.autovalidateMode,
-  });
+  const SharedTextFormField(
+      {super.key,
+      required this.Controller,
+      required this.labelText,
+      this.readOnly = false,
+      this.onTap,
+      this.obsecureText = false,
+      this.validator,
+      this.suffixIcon,
+      this.prefixIcon,
+      this.keyboardType,
+      this.alignLabelWithHint = false,
+      this.maxLines = 1,
+      this.autovalidateMode,
+      this.inputFormatters});
   @override
   Widget build(BuildContext context) {
     return TextFormField(
@@ -43,6 +45,7 @@ class SharedTextFormField extends StatelessWidget {
       readOnly: readOnly,
       onTap: onTap,
       validator: validator,
+      inputFormatters: inputFormatters,
       decoration: InputDecoration(
         contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 17),
         floatingLabelStyle: GoogleFonts.poppins(color: Colors.grey[800]),

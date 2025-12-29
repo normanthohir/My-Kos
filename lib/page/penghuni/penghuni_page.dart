@@ -41,8 +41,9 @@ class _PenghuniPageState extends State<PenghuniPage> {
         'id': 1,
         'nama': 'Siti Milaa',
         'status': true,
-        'kamar': '012',
+        'kamar': '112',
         'no_hp': '081256151551',
+        'harga': '400000',
         'tgl_masuk': '30-05-2024',
         'tgl_keluar': ''
       },
@@ -50,8 +51,9 @@ class _PenghuniPageState extends State<PenghuniPage> {
         'id': 2,
         'nama': 'Ahmad Fauzi',
         'status': true,
-        'kamar': '022',
+        'kamar': '122',
         'no_hp': '081156157878',
+        'harga': '500000',
         'tgl_masuk': '30-05-2024',
         'tgl_keluar': ''
       },
@@ -59,8 +61,9 @@ class _PenghuniPageState extends State<PenghuniPage> {
         'id': 3,
         'nama': 'Reza Maulana',
         'status': false,
-        'kamar': '011',
+        'kamar': '111',
         'no_hp': '081256151551',
+        'harga': '400000',
         'tgl_masuk': '30-05-2025',
         'tgl_keluar': '10-12-2025'
       },
@@ -68,8 +71,9 @@ class _PenghuniPageState extends State<PenghuniPage> {
         'id': 4,
         'nama': 'Swisto Bagus',
         'status': false,
-        'kamar': '002',
+        'kamar': '102',
         'no_hp': '081256151551',
+        'harga': '400000',
         'tgl_masuk': '20-01-2025',
         'tgl_keluar': '01-08-2025'
       },
@@ -77,8 +81,9 @@ class _PenghuniPageState extends State<PenghuniPage> {
         'id': 5,
         'nama': 'Siti Milaa',
         'status': true,
-        'kamar': '012',
+        'kamar': '212',
         'no_hp': '081256151551',
+        'harga': '600000',
         'tgl_masuk': '30-05-2024',
         'tgl_keluar': ''
       },
@@ -463,6 +468,7 @@ class _PenghuniPageState extends State<PenghuniPage> {
                           'nama': penghuni['nama'],
                           'nomorTelepon': penghuni['no_hp'],
                           'kamar': penghuni['kamar'],
+                          'harga': penghuni['harga'],
                           'tanggalMasuk': penghuni['tgl_masuk'],
                           'tanggalKeluar': penghuni['tgl_keluar'],
                         },
@@ -495,6 +501,7 @@ class _PenghuniPageState extends State<PenghuniPage> {
                         'nama': penghuni['nama'],
                         'nomorTelepon': penghuni['no_hp'],
                         'kamar': penghuni['kamar'],
+                        'harga': penghuni['harga'],
                         'tanggalMasuk': penghuni['tgl_masuk'],
                       };
 

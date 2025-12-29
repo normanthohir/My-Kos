@@ -47,6 +47,13 @@ class _KamarPageState extends State<KamarPage> {
     });
   }
 
+  // fungsi untuk menghaous kamar yang sudah ada
+  void _deleteRoom(int index, Room deletedRoom) {
+    setState(() {
+      rooms.removeAt(index);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     List<Room> filteredRooms = rooms.where((room) {
@@ -147,7 +154,6 @@ class _KamarPageState extends State<KamarPage> {
 
   // Fungsi untuk navigasi ke halaman detail kamar
   void _navigateToRoomDetail(Room? room, int index) async {
-    // Jika room tidak null, maka mode edit, jika null maka mode tambah
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
@@ -155,18 +161,40 @@ class _KamarPageState extends State<KamarPage> {
       ),
     );
 
-    // Jika result tidak null (user menyimpan data)
     if (result != null) {
-      // Jika index == -1, berarti menambah kamar baru, selainnya mengedit
-      if (index == -1) {
-        _addNewRoom(result);
-      } else {
-        // Untuk edit, kita perlu mencari index asli di list rooms
-        // Karena filteredRooms mungkin berbeda urutan
-        int originalIndex =
-            rooms.indexWhere((r) => r.roomNumber == room!.roomNumber);
-        if (originalIndex != -1) {
-          _updateRoom(originalIndex, result);
+      // 1. LOGIKA HAPUS
+      if (result == 'delete') {
+        if (index != -1) {
+          // Pastikan bukan kamar baru yang mau dihapus
+          int originalIndex =
+              rooms.indexWhere((r) => r.roomNumber == room!.roomNumber);
+          if (originalIndex != -1) {
+            setState(() {
+              rooms.removeAt(originalIndex);
+            });
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Kamar berhasil dihapus')),
+            );
+          }
+        }
+      }
+
+      // 2. LOGIKA TAMBAH / EDIT (Jika result adalah objek Room)
+      else if (result is Room) {
+        if (index == -1) {
+          _addNewRoom(result);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Kamar berhasil ditambahkan')),
+          );
+        } else {
+          int originalIndex =
+              rooms.indexWhere((r) => r.roomNumber == room!.roomNumber);
+          if (originalIndex != -1) {
+            _updateRoom(originalIndex, result);
+          }
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Kamar berhasil diperbarui')),
+          );
         }
       }
     }

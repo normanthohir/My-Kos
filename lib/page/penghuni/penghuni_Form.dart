@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:may_kos/config/theme.dart';
+import 'package:may_kos/widgets/widget_CurrencyInputFormatter.dart';
 import 'package:may_kos/widgets/widget_textFormField.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -23,7 +25,9 @@ class _PenghuniFormState extends State<PenghuniForm> {
   String? _selectedRoom;
   final _namaController = TextEditingController();
   final _nomorHpController = TextEditingController();
+  final _hargaController = TextEditingController();
 
+  @override
   @override
   void initState() {
     super.initState();
@@ -31,7 +35,23 @@ class _PenghuniFormState extends State<PenghuniForm> {
     if (widget.isEditMode && widget.penghuniData != null) {
       _namaController.text = widget.penghuniData!['nama'] ?? '';
       _nomorHpController.text = widget.penghuniData!['nomorTelepon'] ?? '';
-      _selectedRoom = widget.penghuniData!['kamar'] ?? '';
+      _hargaController.text = widget.penghuniData!['harga'] ?? '';
+
+      // Ambil data kamar dari data yang dikirim
+      String roomFromData = widget.penghuniData!['kamar'] ?? '';
+
+      // LOGIKA PERBAIKAN:
+      // Cek apakah nomor kamar dari data (misal: '112') ada di list availableRooms
+      if (availableRooms.contains(roomFromData)) {
+        _selectedRoom = roomFromData;
+      } else {
+        // Jika tidak ada (seperti kasus '112'), tambahkan secara otomatis ke list
+        // agar Dropdown tidak error/crash
+        if (roomFromData.isNotEmpty) {
+          availableRooms.add(roomFromData);
+          _selectedRoom = roomFromData;
+        }
+      }
     }
   }
 
@@ -113,6 +133,19 @@ class _PenghuniFormState extends State<PenghuniForm> {
             validator: (value) => value == null ? 'Silakan pilih kamar' : null,
           ),
 
+          const SizedBox(height: 15),
+          SharedTextFormField(
+            Controller: _hargaController,
+            labelText: 'Harga bulanan',
+            keyboardType: TextInputType.number,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              CurrencyInputFormatter(),
+            ],
+            prefixIcon: const Icon(
+              Icons.attach_money,
+            ),
+          ),
           const SizedBox(height: 20),
 
           // Tombol simpan/update
