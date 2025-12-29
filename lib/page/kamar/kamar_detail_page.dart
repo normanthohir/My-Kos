@@ -17,6 +17,7 @@ class _KamarDetailPageState extends State<KamarDetailPage> {
   late TextEditingController roomNumberController;
   late String selectedRoomType;
   late bool isOccupied;
+  late TextEditingController hargaController;
 
   // List tipe kamar yang tersedia
   final List<String> roomTypes = ['Standard', 'Deluxe', 'Suite'];
@@ -29,6 +30,7 @@ class _KamarDetailPageState extends State<KamarDetailPage> {
         TextEditingController(text: widget.room?.roomNumber ?? '');
     selectedRoomType = widget.room?.roomType ?? 'Standard';
     isOccupied = widget.room?.isOccupied ?? false;
+    hargaController = TextEditingController(text: widget.room?.harga ?? '');
   }
 
   @override
@@ -136,6 +138,30 @@ class _KamarDetailPageState extends State<KamarDetailPage> {
                           selectedRoomType = newValue!;
                         });
                       },
+                    ),
+                    const SizedBox(height: 20),
+                    Text(
+                      'Harga Kamar',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.grey[700],
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: hargaController,
+                      decoration: InputDecoration(
+                        hintText: 'Harga',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: Colors.grey[300]!),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: Colors.blue[800]!),
+                        ),
+                      ),
                     ),
 
                     const SizedBox(height: 20),
@@ -328,6 +354,7 @@ class _KamarDetailPageState extends State<KamarDetailPage> {
       roomNumber: roomNumberController.text,
       roomType: selectedRoomType,
       isOccupied: isOccupied,
+      harga: hargaController.text,
     );
 
     // Kembalikan ke halaman sebelumnya dengan data kamar baru

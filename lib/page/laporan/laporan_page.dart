@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:may_kos/config/theme.dart';
 import 'package:may_kos/page/laporan/model_report.dart';
@@ -98,131 +99,150 @@ class _LaporanPageState extends State<LaporanPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: colorsApp.background,
-      body: Column(
-        children: [
-          Widgetapbarconten(
-            title: 'Laporan',
+      body: CustomScrollView(
+        slivers: [
+          // AppBar
+          SliverAppBar(
+            surfaceTintColor: colorsApp.primary,
+            backgroundColor: colorsApp.primary,
+            expandedHeight: 200,
+            floating: false,
+            pinned: true,
+            leading: IconButton(
+              icon: const Icon(
+                Iconsax.arrow_left_1,
+                color: Colors.white,
+              ),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+            ),
+            flexibleSpace: FlexibleSpaceBar(
+              centerTitle: true,
+              title: Text(
+                'Laporan & Analitik',
+                style: GoogleFonts.poppins(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+              background: Container(
+                decoration: BoxDecoration(
+                  // borderRadius: BorderRadius.only(
+                  //   bottomLeft: Radius.circular(24),
+                  //   bottomRight: Radius.circular(24),
+                  // ),
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      colorsApp.primary,
+                      colorsApp.primary.withOpacity(0.8),
+                    ],
+                  ),
+                ),
+                child: Padding(
+                  padding: EdgeInsets.only(bottom: 16, left: 20, right: 20),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(height: 45),
+                      Container(
+                        width: double.infinity,
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.13),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Ringkasan ${reportData.period}',
+                              style: GoogleFonts.poppins(
+                                fontSize: 14,
+                                color: Colors.white70,
+                              ),
+                            ),
+                            Text(
+                              'Rp ${_formatCurrency(reportData.totalIncome)}',
+                              style: GoogleFonts.poppins(
+                                fontSize: 30,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                            //  SizedBox(height: 8),
+                            Text(
+                              'Total Pendapatan',
+                              style: GoogleFonts.poppins(
+                                fontSize: 14,
+                                color: Colors.white.withOpacity(0.8),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            actions: [
+              // Tombol export
+              IconButton(
+                onPressed: _exportReport,
+                icon: Icon(Iconsax.receive_square5, color: Colors.white),
+                tooltip: 'Export Laporan',
+              ),
+              // Tombol filter
+              IconButton(
+                onPressed: _showFilterDialog,
+                icon: Icon(Iconsax.filter5, color: Colors.white),
+                tooltip: 'Filter',
+              ),
+            ],
+          ),
+
+          // Konten utama
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: EdgeInsets.all(20),
+              child: Column(
+                children: [
+                  // Statistik utama
+                  _buildMainStats(),
+                  SizedBox(height: 40),
+
+                  // Grafik tren
+                  _buildTrendChart(),
+                  SizedBox(height: 24),
+
+                  // Kamar terpopuler
+                  _buildTopRooms(),
+                  SizedBox(height: 24),
+
+                  // Aktivitas terkini
+                  _buildRecentActivities(),
+                  SizedBox(height: 24),
+
+                  // Laporan detail
+                  _buildDetailedReport(),
+                ],
+              ),
+            ),
           ),
         ],
       ),
-
-      // CustomScrollView(
-
-      //   slivers: [
-      //     // AppBar
-      //     SliverAppBar(
-      //       expandedHeight: 180,
-      //       floating: false,
-      //       pinned: true,
-      //       flexibleSpace: FlexibleSpaceBar(
-      //         title: const Text(
-      //           'Laporan & Analitik',
-      //           style: TextStyle(
-      //             fontSize: 20,
-      //             fontWeight: FontWeight.w600,
-      //             color: Colors.white,
-      //           ),
-      //         ),
-      //         background: Container(
-      //           decoration: BoxDecoration(
-      //             gradient: LinearGradient(
-      //               begin: Alignment.topLeft,
-      //               end: Alignment.bottomRight,
-      //               colors: [
-      //                 colorsApp.primary,
-      //                 colorsApp.primary.withOpacity(0.8),
-      //               ],
-      //             ),
-      //           ),
-      //           child: Padding(
-      //             padding:
-      //                 const EdgeInsets.only(bottom: 16, left: 20, right: 20),
-      //             child: Column(
-      //               mainAxisAlignment: MainAxisAlignment.end,
-      //               crossAxisAlignment: CrossAxisAlignment.start,
-      //               children: [
-      //                 const SizedBox(height: 40),
-      //                 Text(
-      //                   'Ringkasan ${reportData.period}',
-      //                   style: const TextStyle(
-      //                     fontSize: 14,
-      //                     color: Colors.white70,
-      //                   ),
-      //                 ),
-      //                 const SizedBox(height: 8),
-      //                 Text(
-      //                   'Rp ${_formatCurrency(reportData.totalIncome)}',
-      //                   style: const TextStyle(
-      //                     fontSize: 32,
-      //                     fontWeight: FontWeight.bold,
-      //                     color: Colors.white,
-      //                   ),
-      //                 ),
-      //                 const SizedBox(height: 8),
-      //                 Text(
-      //                   'Total Pendapatan',
-      //                   style: TextStyle(
-      //                     fontSize: 14,
-      //                     color: Colors.white.withOpacity(0.8),
-      //                   ),
-      //                 ),
-      //               ],
-      //             ),
-      //           ),
-      //         ),
-      //       ),
-      //       actions: [
-      //         // Tombol export
-      //         IconButton(
-      //           onPressed: _exportReport,
-      //           icon: const Icon(Icons.download, color: Colors.white),
-      //           tooltip: 'Export Laporan',
-      //         ),
-      //         // Tombol filter
-      //         IconButton(
-      //           onPressed: _showFilterDialog,
-      //           icon: const Icon(Icons.filter_list, color: Colors.white),
-      //           tooltip: 'Filter',
-      //         ),
-      //       ],
-      //     ),
-
-      //     // Konten utama
-      //     SliverToBoxAdapter(
-      //       child: Padding(
-      //         padding: const EdgeInsets.all(20),
-      //         child: Column(
-      //           children: [
-      //             // Statistik utama
-      //             _buildMainStats(),
-      //             const SizedBox(height: 24),
-
-      //             // Grafik tren
-      //             _buildTrendChart(),
-      //             const SizedBox(height: 24),
-
-      //             // Kamar terpopuler
-      //             _buildTopRooms(),
-      //             const SizedBox(height: 24),
-
-      //             // Aktivitas terkini
-      //             _buildRecentActivities(),
-      //             const SizedBox(height: 24),
-
-      //             // Laporan detail
-      //             _buildDetailedReport(),
-      //           ],
-      //         ),
-      //       ),
-      //     ),
-      //   ],
-      // ),
 
       // Floating Action Button untuk refresh
       floatingActionButton: FloatingActionButton(
         onPressed: _refreshData,
         backgroundColor: Colors.blue[800],
-        child: const Icon(Icons.refresh, color: Colors.white),
+        child: Icon(Icons.refresh, color: Colors.white),
       ),
     );
   }
@@ -231,9 +251,9 @@ class _LaporanPageState extends State<LaporanPage> {
   Widget _buildMainStats() {
     return GridView.count(
       shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
+      physics: NeverScrollableScrollPhysics(),
       crossAxisCount: 2,
-      childAspectRatio: 1.5,
+      childAspectRatio: 1.1,
       crossAxisSpacing: 16,
       mainAxisSpacing: 16,
       children: [
@@ -242,7 +262,7 @@ class _LaporanPageState extends State<LaporanPage> {
           'Total Kamar',
           '${reportData.totalRooms}',
           Icons.hotel,
-          Colors.blue,
+          colorsApp.primary,
           Colors.blue[50]!,
           '${reportData.occupiedRooms} Terisi • ${reportData.availableRooms} Kosong',
         ),
@@ -291,11 +311,11 @@ class _LaporanPageState extends State<LaporanPage> {
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
             blurRadius: 10,
-            offset: const Offset(0, 4),
+            offset: Offset(0, 4),
           ),
         ],
       ),
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -325,7 +345,7 @@ class _LaporanPageState extends State<LaporanPage> {
             children: [
               Text(
                 title,
-                style: TextStyle(
+                style: GoogleFonts.poppins(
                   fontSize: 12,
                   color: Colors.grey[600],
                   fontWeight: FontWeight.w500,
@@ -334,16 +354,16 @@ class _LaporanPageState extends State<LaporanPage> {
               const SizedBox(height: 4),
               Text(
                 value,
-                style: const TextStyle(
+                style: GoogleFonts.poppins(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
                   color: Colors.black87,
                 ),
               ),
-              const SizedBox(height: 4),
+              SizedBox(height: 4),
               Text(
                 subtitle,
-                style: TextStyle(
+                style: GoogleFonts.poppins(
                   fontSize: 11,
                   color: Colors.grey[500],
                 ),
@@ -365,11 +385,11 @@ class _LaporanPageState extends State<LaporanPage> {
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
             blurRadius: 15,
-            offset: const Offset(0, 5),
+            offset: Offset(0, 5),
           ),
         ],
       ),
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -377,17 +397,16 @@ class _LaporanPageState extends State<LaporanPage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 'Tren Penghasilan',
-                style: TextStyle(
+                style: GoogleFonts.poppins(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                   color: Colors.black87,
                 ),
               ),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
                   color: Colors.blue[50],
                   borderRadius: BorderRadius.circular(20),
@@ -395,10 +414,10 @@ class _LaporanPageState extends State<LaporanPage> {
                 child: Row(
                   children: [
                     Icon(Icons.timeline, size: 16, color: Colors.blue[800]),
-                    const SizedBox(width: 6),
+                    SizedBox(width: 6),
                     Text(
                       selectedChartType,
-                      style: TextStyle(
+                      style: GoogleFonts.poppins(
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
                         color: Colors.blue[800],
@@ -410,11 +429,11 @@ class _LaporanPageState extends State<LaporanPage> {
             ],
           ),
 
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
 
           // Grafik sederhana (bar chart custom)
           Container(
-            height: 200,
+            height: 250,
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.end,
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -440,49 +459,48 @@ class _LaporanPageState extends State<LaporanPage> {
                             Colors.blue[400]!,
                           ],
                         ),
-                        borderRadius: const BorderRadius.only(
+                        borderRadius: BorderRadius.only(
                           topLeft: Radius.circular(8),
                           topRight: Radius.circular(8),
                         ),
                       ),
                     ),
 
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8),
 
                     // Label bulan
                     Text(
                       data.month,
-                      style: TextStyle(
+                      style: GoogleFonts.poppins(
                         fontSize: 12,
                         color: Colors.grey[600],
                       ),
                     ),
 
-                    const SizedBox(height: 4),
+                    SizedBox(height: 4),
 
                     // Nilai
                     Text(
                       '${(data.income / 1000000).toStringAsFixed(1)}JT',
-                      style: TextStyle(
+                      style: GoogleFonts.poppins(
                         fontSize: 11,
                         color: Colors.grey[700],
                         fontWeight: FontWeight.w600,
                       ),
                     ),
 
-                    const SizedBox(height: 4),
+                    SizedBox(height: 4),
 
                     // Persentase okupansi
                     Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 2),
+                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                       decoration: BoxDecoration(
                         color: Colors.green[50],
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Text(
                         '${data.occupancy}%',
-                        style: TextStyle(
+                        style: GoogleFonts.poppins(
                           fontSize: 10,
                           color: Colors.green[700],
                           fontWeight: FontWeight.w600,
@@ -495,14 +513,14 @@ class _LaporanPageState extends State<LaporanPage> {
             ),
           ),
 
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
 
           // Legenda
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               _buildLegendItem(Colors.blue[800]!, 'Penghasilan'),
-              const SizedBox(width: 16),
+              SizedBox(width: 16),
               _buildLegendItem(Colors.green, 'Okupansi'),
             ],
           ),
@@ -526,7 +544,7 @@ class _LaporanPageState extends State<LaporanPage> {
         const SizedBox(width: 6),
         Text(
           label,
-          style: TextStyle(
+          style: GoogleFonts.poppins(
             fontSize: 12,
             color: Colors.grey[600],
           ),
@@ -556,24 +574,23 @@ class _LaporanPageState extends State<LaporanPage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 'Kamar Terpopuler',
-                style: TextStyle(
+                style: GoogleFonts.poppins(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                   color: Colors.black87,
                 ),
               ),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
                   color: Colors.orange[50],
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
                   'Top ${reportData.topRooms.length}',
-                  style: TextStyle(
+                  style: GoogleFonts.poppins(
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
                     color: Colors.orange[800],
@@ -582,7 +599,7 @@ class _LaporanPageState extends State<LaporanPage> {
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           Column(
             children: reportData.topRooms.asMap().entries.map((entry) {
               int index = entry.key;
@@ -605,7 +622,7 @@ class _LaporanPageState extends State<LaporanPage> {
                       child: Center(
                         child: Text(
                           '${index + 1}',
-                          style: TextStyle(
+                          style: GoogleFonts.poppins(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
                             color: index == 0
@@ -616,7 +633,7 @@ class _LaporanPageState extends State<LaporanPage> {
                       ),
                     ),
 
-                    const SizedBox(width: 12),
+                    SizedBox(width: 12),
 
                     // Info kamar
                     Expanded(
@@ -625,16 +642,16 @@ class _LaporanPageState extends State<LaporanPage> {
                         children: [
                           Text(
                             'Kamar ${room.roomNumber}',
-                            style: const TextStyle(
+                            style: GoogleFonts.poppins(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
                               color: Colors.black87,
                             ),
                           ),
-                          const SizedBox(height: 2),
+                          SizedBox(height: 2),
                           Text(
                             room.roomType,
-                            style: TextStyle(
+                            style: GoogleFonts.poppins(
                               fontSize: 12,
                               color: Colors.grey[600],
                             ),
@@ -649,16 +666,16 @@ class _LaporanPageState extends State<LaporanPage> {
                       children: [
                         Text(
                           'Rp ${_formatCurrency(room.income)}',
-                          style: const TextStyle(
+                          style: GoogleFonts.poppins(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
                             color: Colors.black87,
                           ),
                         ),
-                        const SizedBox(height: 2),
+                        SizedBox(height: 2),
                         Text(
                           '${room.occupancyDays} hari',
-                          style: TextStyle(
+                          style: GoogleFonts.poppins(
                             fontSize: 12,
                             color: Colors.grey[600],
                           ),
@@ -666,7 +683,7 @@ class _LaporanPageState extends State<LaporanPage> {
                       ],
                     ),
 
-                    const SizedBox(width: 8),
+                    SizedBox(width: 8),
 
                     // Icon
                     Icon(
@@ -693,27 +710,27 @@ class _LaporanPageState extends State<LaporanPage> {
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
             blurRadius: 15,
-            offset: const Offset(0, 5),
+            offset: Offset(0, 5),
           ),
         ],
       ),
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Aktivitas Terkini',
-            style: TextStyle(
+            style: GoogleFonts.poppins(
               fontSize: 18,
               fontWeight: FontWeight.bold,
               color: Colors.black87,
             ),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           Column(
             children: reportData.recentActivities.map((activity) {
               return Container(
-                margin: const EdgeInsets.only(bottom: 16),
+                margin: EdgeInsets.only(bottom: 16),
                 child: Row(
                   children: [
                     // Icon dengan background
@@ -731,7 +748,7 @@ class _LaporanPageState extends State<LaporanPage> {
                       ),
                     ),
 
-                    const SizedBox(width: 16),
+                    SizedBox(width: 16),
 
                     // Detail aktivitas
                     Expanded(
@@ -740,16 +757,16 @@ class _LaporanPageState extends State<LaporanPage> {
                         children: [
                           Text(
                             activity.activity,
-                            style: const TextStyle(
+                            style: GoogleFonts.poppins(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
                               color: Colors.black87,
                             ),
                           ),
-                          const SizedBox(height: 4),
+                          SizedBox(height: 4),
                           Text(
                             activity.description,
-                            style: TextStyle(
+                            style: GoogleFonts.poppins(
                               fontSize: 14,
                               color: Colors.grey[600],
                             ),
@@ -761,7 +778,7 @@ class _LaporanPageState extends State<LaporanPage> {
                     // Waktu
                     Text(
                       activity.time,
-                      style: TextStyle(
+                      style: GoogleFonts.poppins(
                         fontSize: 12,
                         color: Colors.grey[500],
                       ),
@@ -786,24 +803,24 @@ class _LaporanPageState extends State<LaporanPage> {
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
             blurRadius: 15,
-            offset: const Offset(0, 5),
+            offset: Offset(0, 5),
           ),
         ],
       ),
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Laporan Detail',
-            style: TextStyle(
+            style: GoogleFonts.poppins(
               fontSize: 18,
               fontWeight: FontWeight.bold,
               color: Colors.black87,
             ),
           ),
 
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
 
           // Statistik detail
           _buildDetailRow(
@@ -827,20 +844,20 @@ class _LaporanPageState extends State<LaporanPage> {
 
   Widget _buildDetailRow(String label, String value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12),
+      padding: EdgeInsets.symmetric(vertical: 12),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
             label,
-            style: TextStyle(
+            style: GoogleFonts.poppins(
               fontSize: 14,
               color: Colors.grey[600],
             ),
           ),
           Text(
             value,
-            style: const TextStyle(
+            style: GoogleFonts.poppins(
               fontSize: 14,
               fontWeight: FontWeight.w600,
               color: Colors.black87,
@@ -866,36 +883,36 @@ class _LaporanPageState extends State<LaporanPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Export Laporan'),
+        title: Text('Export Laporan'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Pilih format export:'),
-            const SizedBox(height: 16),
+            Text('Pilih format export:'),
+            SizedBox(height: 16),
             _buildExportOption(Icons.picture_as_pdf, 'PDF', Colors.red),
-            const SizedBox(height: 12),
+            SizedBox(height: 12),
             _buildExportOption(Icons.insert_drive_file, 'Excel', Colors.green),
-            const SizedBox(height: 12),
+            SizedBox(height: 12),
             _buildExportOption(Icons.image, 'Gambar', Colors.blue),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Batal'),
+            child: Text('Batal'),
           ),
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
+                SnackBar(
                   content: Text('Laporan berhasil diexport'),
                   backgroundColor: Colors.green,
                 ),
               );
             },
-            child: const Text('Export'),
+            child: Text('Export'),
           ),
         ],
       ),
@@ -914,7 +931,7 @@ class _LaporanPageState extends State<LaporanPage> {
         child: Icon(icon, color: color),
       ),
       title: Text(label),
-      trailing: const Icon(Icons.chevron_right),
+      trailing: Icon(Icons.chevron_right),
       onTap: () {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
@@ -934,19 +951,19 @@ class _LaporanPageState extends State<LaporanPage> {
       builder: (context) => StatefulBuilder(
         builder: (context, setState) {
           return AlertDialog(
-            title: const Text('Filter Laporan'),
+            title: Text('Filter Laporan'),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 // Pilih periode
-                const Align(
+                Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
                     'Periode Waktu',
-                    style: TextStyle(fontWeight: FontWeight.w500),
+                    style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
                   ),
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8),
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
@@ -961,24 +978,24 @@ class _LaporanPageState extends State<LaporanPage> {
                           selectedPeriod = period;
                         });
                       },
-                      labelStyle: TextStyle(
+                      labelStyle: GoogleFonts.poppins(
                         color: isSelected ? Colors.white : Colors.black87,
                       ),
                     );
                   }).toList(),
                 ),
 
-                const SizedBox(height: 20),
+                SizedBox(height: 20),
 
                 // Pilih tipe chart
-                const Align(
+                Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
                     'Tampilkan Data',
-                    style: TextStyle(fontWeight: FontWeight.w500),
+                    style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
                   ),
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8),
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
@@ -993,7 +1010,7 @@ class _LaporanPageState extends State<LaporanPage> {
                           selectedChartType = type;
                         });
                       },
-                      labelStyle: TextStyle(
+                      labelStyle: GoogleFonts.poppins(
                         color: isSelected ? Colors.white : Colors.black87,
                       ),
                     );
@@ -1004,7 +1021,7 @@ class _LaporanPageState extends State<LaporanPage> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text('Reset'),
+                child: Text('Reset'),
               ),
               ElevatedButton(
                 onPressed: () {

@@ -99,7 +99,7 @@ class _RiwayatPembayaranPageState extends State<RiwayatPembayaranPage> {
           // Header
           Container(
             padding: const EdgeInsets.only(
-              top: 60,
+              top: 50,
               left: 20,
               right: 20,
               bottom: 20,

@@ -14,16 +14,21 @@ class KamarPage extends StatefulWidget {
 
 class _KamarPageState extends State<KamarPage> {
   List<Room> rooms = [
-    Room(roomNumber: '101', isOccupied: false, roomType: 'Standard'),
-    Room(roomNumber: '102', isOccupied: true, roomType: 'Deluxe'),
-    Room(roomNumber: '103', isOccupied: false, roomType: 'Suite'),
-    Room(roomNumber: '104', isOccupied: true, roomType: 'Standard'),
-    Room(roomNumber: '105', isOccupied: false, roomType: 'Deluxe'),
-    Room(roomNumber: '201', isOccupied: false, roomType: 'Standard'),
-    Room(roomNumber: '202', isOccupied: true, roomType: 'Suite'),
-    Room(roomNumber: '203', isOccupied: false, roomType: 'Deluxe'),
-    Room(roomNumber: '204', isOccupied: true, roomType: 'Standard'),
-    Room(roomNumber: '205', isOccupied: false, roomType: 'Suite'),
+    Room(
+        roomNumber: '101',
+        isOccupied: false,
+        roomType: 'Standard',
+        harga: 'Rp. 400.000'),
+    Room(
+        roomNumber: '102',
+        isOccupied: true,
+        roomType: 'Deluxe',
+        harga: 'Rp. 600.000'),
+    Room(
+        roomNumber: '103',
+        isOccupied: false,
+        roomType: 'Suite',
+        harga: 'Rp. 100.000'),
   ];
 
   String filterStatus = 'Semua';
@@ -368,10 +373,12 @@ class Room {
   String roomNumber;
   bool isOccupied;
   String roomType;
+  String harga;
 
   Room({
     required this.roomNumber,
     required this.isOccupied,
     required this.roomType,
+    required this.harga,
   });
 }
