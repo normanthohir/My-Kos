@@ -100,7 +100,7 @@ class _PenghuniPageState extends State<PenghuniPage> {
           Widgetapbarconten(
             title: 'Penghuni',
             rightIcon: Iconsax.user_add,
-            onRightIconTap: () => showPenghuniModal(
+            onRightIconTap: () => showPenghuniModall(
               context: context,
               isEditMode: false,
             ),
@@ -505,7 +505,7 @@ class _PenghuniPageState extends State<PenghuniPage> {
                         'tanggalMasuk': penghuni['tgl_masuk'],
                       };
 
-                      showPenghuniModal(
+                      showPenghuniModall(
                         context: context,
                         penghuniData: penghuniData,
                         isEditMode: true,
@@ -541,78 +541,107 @@ class _PenghuniPageState extends State<PenghuniPage> {
     );
   }
 
-  void showPenghuniModal({
+  void showPenghuniModall({
     required BuildContext context,
     Map<String, dynamic>? penghuniData,
     bool isEditMode = false,
   }) {
-    showModalBottomSheet(
+    showGeneralDialog(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) {
-        return Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
+      barrierDismissible: true,
+      barrierLabel: '',
+      barrierColor: Colors.black.withOpacity(0.5),
+      transitionDuration: const Duration(milliseconds: 300),
+      pageBuilder: (context, animation, secondaryAnimation) {
+        return ScaleTransition(
+          scale: CurvedAnimation(
+            parent: animation,
+            curve: Curves.easeOutBack,
           ),
-          child: Container(
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(24),
-                topRight: Radius.circular(24),
-              ),
-            ),
-            child: SafeArea(
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Handle bar
-                      Container(
-                        width: 40,
-                        height: 5,
-                        decoration: BoxDecoration(
-                          color: Colors.grey[300],
-                          borderRadius: BorderRadius.circular(3),
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-
-                      // Form Penghuni
-                      PenghuniForm(
-                        penghuniData: penghuniData,
-                        isEditMode: isEditMode,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+          child: FadeTransition(
+            opacity: animation,
+            child: PenghuniForm(
+              penghuniData: penghuniData,
+              isEditMode: isEditMode,
             ),
           ),
         );
       },
-    ).then((result) {
-      // Handle result ketika form ditutup
-      if (result != null) {
-        // result berisi data yang dikirim dari form
-        print('Data penghuni: $result');
-
-        // Di sini Anda bisa panggil fungsi untuk menyimpan ke database
-        if (isEditMode) {
-          // Panggil fungsi update
-          // updatePenghuni(penghuniData['id'], result);
-        } else {
-          // Panggil fungsi tambah
-          // addPenghuni(result);
-        }
-      }
-    });
+    );
   }
 
-  // Atau dengan animasi yang lebih smooth:
+  // void showPenghuniModal({
+  //   required BuildContext context,
+  //   Map<String, dynamic>? penghuniData,
+  //   bool isEditMode = false,
+  // }) {
+  //   showModalBottomSheet(
+  //     context: context,
+  //     isScrollControlled: true,
+  //     backgroundColor: Colors.transparent,
+  //     builder: (context) {
+  //       return Padding(
+  //         padding: EdgeInsets.only(
+  //           bottom: MediaQuery.of(context).viewInsets.bottom,
+  //         ),
+  //         child: Container(
+  //           decoration: const BoxDecoration(
+  //             color: Colors.white,
+  //             borderRadius: BorderRadius.only(
+  //               topLeft: Radius.circular(24),
+  //               topRight: Radius.circular(24),
+  //             ),
+  //           ),
+  //           child: SafeArea(
+  //             child: SingleChildScrollView(
+  //               child: Padding(
+  //                 padding: const EdgeInsets.all(20),
+  //                 child: Column(
+  //                   mainAxisSize: MainAxisSize.min,
+  //                   children: [
+  //                     // Handle bar
+  //                     Container(
+  //                       width: 40,
+  //                       height: 5,
+  //                       decoration: BoxDecoration(
+  //                         color: Colors.grey[300],
+  //                         borderRadius: BorderRadius.circular(3),
+  //                       ),
+  //                     ),
+  //                     const SizedBox(height: 20),
+
+  //                     // Form Penghuni
+  //                     PenghuniForm(
+  //                       penghuniData: penghuniData,
+  //                       isEditMode: isEditMode,
+  //                     ),
+  //                   ],
+  //                 ),
+  //               ),
+  //             ),
+  //           ),
+  //         ),
+  //       );
+  //     },
+  //   ).then((result) {
+  //     // Handle result ketika form ditutup
+  //     if (result != null) {
+  //       // result berisi data yang dikirim dari form
+  //       print('Data penghuni: $result');
+
+  //       // Di sini Anda bisa panggil fungsi untuk menyimpan ke database
+  //       if (isEditMode) {
+  //         // Panggil fungsi update
+  //         // updatePenghuni(penghuniData['id'], result);
+  //       } else {
+  //         // Panggil fungsi tambah
+  //         // addPenghuni(result);
+  //       }
+  //     }
+  //   });
+  // }
+
+  // info penghuni
   void showDetailPenghuniDialogWithAnimation({
     required BuildContext context,
     required Map<String, dynamic> penghuniData,

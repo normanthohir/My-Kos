@@ -217,7 +217,7 @@ class _KamarPageState extends State<KamarPage> {
           Text(
             title,
             style: GoogleFonts.poppins(
-              fontSize: 13,
+              fontSize: 16,
               fontWeight: FontWeight.w500,
               color: Colors.white.withOpacity(0.9),
             ),
@@ -319,7 +319,7 @@ class _KamarPageState extends State<KamarPage> {
                     Icon(
                       Icons.king_bed,
                       size: 16,
-                      color: Colors.blue[800],
+                      color: colorsApp.textPrimary,
                     ),
                     const SizedBox(width: 6),
                     Text(
@@ -327,7 +327,25 @@ class _KamarPageState extends State<KamarPage> {
                       style: GoogleFonts.poppins(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
-                        color: colorsApp.primary,
+                        color: colorsApp.textPrimary,
+                      ),
+                    ),
+                  ],
+                ),
+                Row(
+                  children: [
+                    Icon(
+                      Iconsax.wallet,
+                      size: 16,
+                      color: colorsApp.textPrimary,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      room.harga,
+                      style: GoogleFonts.poppins(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: colorsApp.textPrimary,
                       ),
                     ),
                   ],

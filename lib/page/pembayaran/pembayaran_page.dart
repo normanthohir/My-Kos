@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:may_kos/config/theme.dart';
+import 'package:may_kos/page/empty_page/empty_page.dart';
+import 'package:may_kos/page/pembayaran/pembayran_form.dart';
 import 'package:may_kos/widgets/widget_Search.dart';
 
 class PembayaranPage extends StatefulWidget {
@@ -105,7 +107,7 @@ class _PembayaranPageState extends State<PembayaranPage> {
                       icon: const Icon(Iconsax.document_upload,
                           color: Colors.white),
                       onPressed: () {
-                        _showInputPembayaranModal(context);
+                        ForminputpembayarabDialog();
                       },
                     ),
                   ],
@@ -186,7 +188,7 @@ class _PembayaranPageState extends State<PembayaranPage> {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: _tagihanList.isEmpty
-                  ? _buildEmptyState()
+                  ? EmptyPage()
                   : ListView.separated(
                       itemCount: _tagihanList.length,
                       separatorBuilder: (context, index) =>
@@ -410,242 +412,11 @@ class _PembayaranPageState extends State<PembayaranPage> {
     );
   }
 
-  Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 120,
-            height: 120,
-            decoration: BoxDecoration(
-              color: colorsApp.background,
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              Iconsax.receipt_item,
-              size: 50,
-              color: colorsApp.textTertiary.withOpacity(0.5),
-            ),
-          ),
-          const SizedBox(height: 24),
-          Text(
-            'Tidak Ada Tagihan',
-            style: GoogleFonts.poppins(
-              fontSize: 20,
-              fontWeight: FontWeight.w600,
-              color: colorsApp.textPrimary,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 40),
-            child: Text(
-              'Semua tagihan telah dibayar atau belum ada tagihan bulan ini',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.poppins(
-                fontSize: 14,
-                color: colorsApp.textTertiary,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   String _formatCurrency(int amount) {
     return amount.toString().replaceAllMapped(
           RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
           (Match m) => '${m[1]}.',
         );
-  }
-
-  void _showInputPembayaranModal(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) {
-        return Container(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-          ),
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(24),
-              topRight: Radius.circular(24),
-            ),
-          ),
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Center(
-                    child: Container(
-                      width: 40,
-                      height: 5,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[300],
-                        borderRadius: BorderRadius.circular(3),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Input Pembayaran',
-                        style: GoogleFonts.poppins(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w700,
-                          color: colorsApp.textPrimary,
-                        ),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.close),
-                        onPressed: () => Navigator.pop(context),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Form sederhana
-                  Column(
-                    children: [
-                      // Pilih penghuni
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 14,
-                        ),
-                        decoration: BoxDecoration(
-                          color: colorsApp.background,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: colorsApp.border),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Pilih Penghuni',
-                              style: GoogleFonts.poppins(
-                                color: colorsApp.textTertiary,
-                              ),
-                            ),
-                            Icon(
-                              Iconsax.arrow_down_1,
-                              size: 18,
-                              color: colorsApp.textTertiary,
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Jumlah pembayaran
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 14,
-                        ),
-                        decoration: BoxDecoration(
-                          color: colorsApp.background,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: colorsApp.border),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Rp 0',
-                              style: GoogleFonts.poppins(
-                                color: colorsApp.textTertiary,
-                              ),
-                            ),
-                            Text(
-                              'Jumlah',
-                              style: GoogleFonts.poppins(
-                                color: colorsApp.textTertiary,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Metode pembayaran
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 14,
-                        ),
-                        decoration: BoxDecoration(
-                          color: colorsApp.background,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: colorsApp.border),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Pilih Metode',
-                              style: GoogleFonts.poppins(
-                                color: colorsApp.textTertiary,
-                              ),
-                            ),
-                            Icon(
-                              Iconsax.arrow_down_1,
-                              size: 18,
-                              color: colorsApp.textTertiary,
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 32),
-
-                      // Tombol simpan
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                            // Simpan pembayaran
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: colorsApp.success,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          child: Text(
-                            'Simpan Pembayaran',
-                            style: GoogleFonts.poppins(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 16,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
   }
 
   void _showBayarModal(BuildContext context, Map<String, dynamic> tagihan) {
@@ -918,6 +689,29 @@ class _PembayaranPageState extends State<PembayaranPage> {
           ),
         ],
       ),
+    );
+  }
+
+  // modal Pembayaran
+  void ForminputpembayarabDialog() {
+    showGeneralDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: '',
+      barrierColor: Colors.black.withOpacity(0.5),
+      transitionDuration: const Duration(milliseconds: 300),
+      pageBuilder: (context, animation, secondaryAnimation) {
+        return ScaleTransition(
+          scale: CurvedAnimation(
+            parent: animation,
+            curve: Curves.easeOutBack,
+          ),
+          child: FadeTransition(
+            opacity: animation,
+            child: PembayranForm(),
+          ),
+        );
+      },
     );
   }
 }
