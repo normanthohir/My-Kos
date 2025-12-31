@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 class Kamar {
   int? id;
   String nomorKamar;
