@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:may_kos/config/theme.dart';
 import 'package:may_kos/page/kamar/kamar_detail_page.dart';
+import 'package:may_kos/page/kamar/kamar_form.dart';
 import 'package:may_kos/widgets/widgetApbarConten.dart';
 
 class KamarPage extends StatefulWidget {
@@ -74,7 +75,7 @@ class _KamarPageState extends State<KamarPage> {
           Widgetapbarconten(
             title: 'Daftar Kamar',
             rightIcon: Iconsax.add_circle,
-            onRightIconTap: () => _navigateToRoomDetail(null, -1),
+            onRightIconTap: () => _ForminputKamar(room: null, index: -1),
             contain: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
@@ -139,7 +140,10 @@ class _KamarPageState extends State<KamarPage> {
                   return GestureDetector(
                     onTap: () {
                       // Navigasi ke halaman detail untuk mengedit kamar yang dipilih
-                      _navigateToRoomDetail(filteredRooms[index], index);
+                      _ForminputKamar(
+                        room: filteredRooms[index],
+                        index: index,
+                      );
                     },
                     child: _buildRoomCard(filteredRooms[index]),
                   );
@@ -152,52 +156,69 @@ class _KamarPageState extends State<KamarPage> {
     );
   }
 
-  // Fungsi untuk navigasi ke halaman detail kamar
-  void _navigateToRoomDetail(Room? room, int index) async {
-    final result = await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => KamarDetailPage(room: room),
-      ),
+  // form tambah dan edit kamar
+  void _ForminputKamar({Room? room, required int index}) async {
+    // Tangkap result dari dialog
+    final result = await showGeneralDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: '',
+      barrierColor: Colors.black.withOpacity(0.5),
+      transitionDuration: const Duration(milliseconds: 300),
+      pageBuilder: (context, animation, secondaryAnimation) {
+        return ScaleTransition(
+          scale: CurvedAnimation(
+            parent: animation,
+            curve: Curves.easeOutBack,
+          ),
+          child: FadeTransition(
+            opacity: animation,
+            child: KamarForm(
+              room: room,
+            ),
+          ),
+        );
+      },
     );
 
+    // Logika eksekusi setelah dialog tertutup
     if (result != null) {
       // 1. LOGIKA HAPUS
       if (result == 'delete') {
-        if (index != -1) {
-          // Pastikan bukan kamar baru yang mau dihapus
-          int originalIndex =
-              rooms.indexWhere((r) => r.roomNumber == room!.roomNumber);
-          if (originalIndex != -1) {
-            setState(() {
-              rooms.removeAt(originalIndex);
-            });
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Kamar berhasil dihapus')),
-            );
-          }
+        int originalIndex =
+            rooms.indexWhere((r) => r.roomNumber == room?.roomNumber);
+        if (originalIndex != -1) {
+          setState(() {
+            rooms.removeAt(originalIndex);
+          });
+          _showSnackBar('Kamar berhasil dihapus');
         }
       }
 
-      // 2. LOGIKA TAMBAH / EDIT (Jika result adalah objek Room)
+      // 2. LOGIKA TAMBAH / EDIT
       else if (result is Room) {
         if (index == -1) {
+          // Tambah Baru
           _addNewRoom(result);
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Kamar berhasil ditambahkan')),
-          );
+          _showSnackBar('Kamar berhasil ditambahkan');
         } else {
+          // Update/Edit
           int originalIndex =
-              rooms.indexWhere((r) => r.roomNumber == room!.roomNumber);
+              rooms.indexWhere((r) => r.roomNumber == room?.roomNumber);
           if (originalIndex != -1) {
             _updateRoom(originalIndex, result);
+            _showSnackBar('Kamar berhasil diperbarui');
           }
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Kamar berhasil diperbarui')),
-          );
         }
       }
     }
+  }
+
+// Fungsi pembantu snackbar agar kode lebih bersih
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
   }
 
   Widget _buildStatCard(

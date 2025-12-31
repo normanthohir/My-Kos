@@ -28,7 +28,7 @@ class _PembayaranPageState extends State<PembayaranPage> {
       {
         'id': 1,
         'nama': 'Siti Milaa',
-        'kamar': '012',
+        'kamar': '112',
         'periode': 'April 2024',
         'jatuh_tempo': '10 April 2024',
         'jumlah': 1200000,
@@ -37,7 +37,7 @@ class _PembayaranPageState extends State<PembayaranPage> {
       {
         'id': 2,
         'nama': 'Ahmad Fauzi',
-        'kamar': '022',
+        'kamar': '122',
         'periode': 'April 2024',
         'jatuh_tempo': '10 April 2024',
         'jumlah': 1100000,
@@ -46,7 +46,7 @@ class _PembayaranPageState extends State<PembayaranPage> {
       {
         'id': 3,
         'nama': 'Reza Maulana',
-        'kamar': '011',
+        'kamar': '111',
         'periode': 'April 2024',
         'jatuh_tempo': '10 April 2024',
         'jumlah': 1200000,

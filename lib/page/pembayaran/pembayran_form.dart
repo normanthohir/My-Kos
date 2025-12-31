@@ -19,8 +19,8 @@ class _PembayranFormState extends State<PembayranForm> {
   final _jumlahcontroller = TextEditingController();
   final TextEditingController _dateController = TextEditingController();
   final TextEditingController _priodeController = TextEditingController();
-  // Tambahkan di deretan controller atas
   final TextEditingController _penghuniController = TextEditingController();
+  String? _selectedTypepembayaran;
   DateTime? _selectedDate;
   DateTime? _selectedPeriode;
   final List<Map<String, dynamic>> _penghuniList = [];
@@ -74,7 +74,7 @@ class _PembayranFormState extends State<PembayranForm> {
       {
         'id': 4,
         'nama': 'Fauzi Maulana',
-        'kamar': '112',
+        'kamar': '102',
         'tipe_kamar': 'Standard',
         'no_hp': '081256151551',
         'harga': '400000',
@@ -183,7 +183,7 @@ class _PembayranFormState extends State<PembayranForm> {
                         Controller: _jumlahcontroller,
                         labelText: 'Jumlah Pembayaran',
                         keyboardType: TextInputType.number,
-                        prefixIcon: Icon(Iconsax.wallet_1),
+                        prefixIcon: Icon(Iconsax.dollar_circle),
                         inputFormatters: [
                           FilteringTextInputFormatter.digitsOnly,
                           CurrencyInputFormatter(),
@@ -212,6 +212,7 @@ class _PembayranFormState extends State<PembayranForm> {
                       SizedBox(height: 20),
                       // metod pembayaran
                       DropdownButtonFormField(
+                        value: _selectedTypepembayaran,
                         decoration: InputDecoration(
                           labelText: 'Metod Pembayaran',
                           prefixIcon: const Icon(Iconsax.wallet_2),
@@ -229,8 +230,10 @@ class _PembayranFormState extends State<PembayranForm> {
                             child: Text('Transfer'),
                           ),
                         ],
-                        onChanged: (value) {
-                          // Handle pilihan penghuni di sini
+                        onChanged: (Value) {
+                          setState(() {
+                            _selectedTypepembayaran = Value;
+                          });
                         },
                       ),
                       SizedBox(height: 20),
