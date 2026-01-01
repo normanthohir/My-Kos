@@ -24,7 +24,7 @@ class Penghuni {
       'nomor_hp': nomorhanphone,
       'tanggal_masuk': tanggalMasuk.toIso8601String(),
       'tanggal_keluar': tanggalKeluar?.toIso8601String(),
-      'status_aktif': statusPenghuni ? 1 : 0,
+      'status_penghuni': statusPenghuni ? 1 : 0,
       'kamar_id': kamarId,
     };
   }
@@ -38,7 +38,7 @@ class Penghuni {
       tanggalKeluar: map['tanggal_keluar'] != null
           ? DateTime.parse(map['tanggal_keluar'])
           : null,
-      statusPenghuni: map['status_aktif'] == 1,
+      statusPenghuni: map['status_penghuni'] == 1,
       kamarId: map['kamar_id'],
     );
   }
