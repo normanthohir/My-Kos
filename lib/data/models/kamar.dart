@@ -3,14 +3,14 @@ class Kamar {
   String nomorKamar;
   String typeKamar;
   double hargaKamar;
-  bool statusKamar;
+  String statusKamar;
 
   Kamar({
     this.id,
     required this.nomorKamar,
     required this.typeKamar,
     required this.hargaKamar,
-    required this.statusKamar,
+    this.statusKamar = 'Tersedia',
   });
 
   Map<String, dynamic> toMap() {
@@ -19,7 +19,7 @@ class Kamar {
       'nomor_kamar': nomorKamar,
       'type_kamar': typeKamar,
       'harga_kamar': hargaKamar,
-      'status_kamar': statusKamar ? 1 : 0,
+      'status_kamar': statusKamar,
     };
   }
 
@@ -28,8 +28,8 @@ class Kamar {
       id: map['id'],
       nomorKamar: map['nomor_kamar'],
       typeKamar: map['type_kamar'],
-      hargaKamar: map['harga_kamar'].toDouble(),
-      statusKamar: map['status_kamar'] == 1,
+      hargaKamar: (map['harga_kamar'] as num).toDouble(),
+      statusKamar: map['status'] ?? 'Tersedia',
     );
   }
 }

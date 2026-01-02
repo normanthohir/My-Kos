@@ -34,7 +34,9 @@ class DatabaseHelper {
         nomor_kamar TEXT UNIQUE NOT NULL,
         type_kamar TEXT NOT NULL,
         harga_kamar REAL NOT NULL,
-        status_kosong INTEGER NOT NULL DEFAULT 0
+        status_kamar TEXT NOT NULL DEFAULT 'Tersedia', -- Tersedia, Terisi, Maintenance
+        catatan TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )
     ''');
 
@@ -43,10 +45,9 @@ class DatabaseHelper {
       CREATE TABLE penghuni (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         nama_penghuni TEXT NOT NULL,
-        nomor_kamar TEXT NOT NULL,
         tanggal_masuk TEXT NOT NULL,
         tanggal_keluar TEXT,
-        status_penghuni INTEGER NOT NULL DEFAULT 1,
+        status_penghuni INTEGER DEFAULT 1, -- 1: Masih ngekos, 0: Sudah keluar
         kamar_id INTEGER,
         FOREIGN KEY (kamar_id) REFERENCES kamar(id) ON DELETE CASCADE
       )
@@ -56,13 +57,14 @@ class DatabaseHelper {
     await db.execute('''
       CREATE TABLE pembayaran (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        nama_penghuni TEXT NOT NULL, -- Perbaikan: Tadi kurang koma di sini
+        nama_penghuni_pembayaran TEXT NOT NULL,
         nomor_kamar_pembayar TEXT NOT NULL,
         jumlah_pembayaran REAL NOT NULL,
-        metode_pembayaran TEXT NOT NULL,
-        status_pembayaran INTEGER NOT NULL DEFAULT 1,
+        metode_bayar TEXT NOT NULL, -- Contoh: 'Transfer', 'Tunai'
         periode_pembayaran TEXT NOT NULL,
         tanggal_pembayaran TEXT NOT NULL,
+        status_pembayaran TEXT DEFAULT 'Lunas', 
+        bukti_pembayaran TEXT, -- Path ke galeri/kamera
         kamar_id INTEGER,
         penghuni_id INTEGER,
         FOREIGN KEY (kamar_id) REFERENCES kamar(id) ON DELETE SET NULL,
