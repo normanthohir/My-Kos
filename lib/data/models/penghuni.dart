@@ -20,7 +20,7 @@ class Penghuni {
   Map<String, dynamic> toMap() {
     return {
       'id': id,
-      'nama': namaPenghuni,
+      'nama_penghuni': namaPenghuni,
       'nomor_hp': nomorhanphone,
       'tanggal_masuk': tanggalMasuk.toIso8601String(),
       'tanggal_keluar': tanggalKeluar?.toIso8601String(),
@@ -32,7 +32,7 @@ class Penghuni {
   factory Penghuni.fromMap(Map<String, dynamic> map) {
     return Penghuni(
       id: map['id'],
-      namaPenghuni: map['nama'],
+      namaPenghuni: map['nama_penghuni'],
       nomorhanphone: map['nomor_hp'],
       tanggalMasuk: DateTime.parse(map['tanggal_masuk']),
       tanggalKeluar: map['tanggal_keluar'] != null
