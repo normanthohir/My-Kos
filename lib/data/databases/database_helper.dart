@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:may_kos/data/models/kamar.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
@@ -71,5 +74,59 @@ class DatabaseHelper {
         FOREIGN KEY (penghuni_id) REFERENCES penghuni(id) ON DELETE SET NULL
       )
     ''');
+  }
+
+  // crud kamar
+  Future<int> insertKamar(Kamar kamar) async {
+    Database db = await database;
+    return await db.insert('kamar', kamar.toMap());
+  }
+
+  Future<List<Kamar>> getAllKamar() async {
+    Database db = await database;
+    List<Map<String, dynamic>> maps = await db.query('kamar');
+    return List.generate(maps.length, (i) => Kamar.fromMap(maps[i]));
+  }
+
+  Future<List<Kamar>> getKamarKosong() async {
+    Database db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'kamar',
+      where: 'status_kosong = ?',
+      whereArgs: ['Tersedia'],
+    );
+    return List.generate(maps.length, (i) => Kamar.fromMap(maps[i]));
+  }
+
+  Future<List<Kamar>> getKamarTerisi() async {
+    Database db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'kamar',
+      where: 'status_kamar = ?',
+      whereArgs: ['terisi'],
+    );
+    return List.generate(
+      maps.length,
+      (i) => Kamar.fromMap(maps[i]),
+    );
+  }
+
+  Future<int> updateKamar(Kamar kamar) async {
+    Database db = await database;
+    return await db.update(
+      'kamar',
+      kamar.toMap(),
+      where: 'id = ?',
+      whereArgs: [kamar.id],
+    );
+  }
+
+  Future<int> deleteKamar(int id) async {
+    Database db = await database;
+    return await db.delete(
+      'kamar',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
   }
 }

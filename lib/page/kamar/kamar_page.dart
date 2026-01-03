@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:may_kos/config/theme.dart';
-import 'package:may_kos/page/kamar/kamar_detail_page.dart';
+import 'package:may_kos/data/databases/database_helper.dart';
+import 'package:may_kos/data/models/kamar.dart';
+import 'package:may_kos/page/empty_page/empty_page.dart';
 import 'package:may_kos/page/kamar/kamar_form.dart';
 import 'package:may_kos/widgets/widgetApbarConten.dart';
 
@@ -14,60 +16,22 @@ class KamarPage extends StatefulWidget {
 }
 
 class _KamarPageState extends State<KamarPage> {
-  List<Room> rooms = [
-    Room(
-        roomNumber: '101',
-        isOccupied: false,
-        roomType: 'Standard',
-        harga: 'Rp. 400.000'),
-    Room(
-        roomNumber: '102',
-        isOccupied: true,
-        roomType: 'Deluxe',
-        harga: 'Rp. 600.000'),
-    Room(
-        roomNumber: '103',
-        isOccupied: false,
-        roomType: 'Suite',
-        harga: 'Rp. 100.000'),
-  ];
-
   String filterStatus = 'Semua';
-
-  // Fungsi untuk menambah kamar baru
-  void _addNewRoom(Room newRoom) {
-    setState(() {
-      rooms.add(newRoom);
-    });
-  }
-
-  // Fungsi untuk mengedit kamar yang sudah ada
-  void _updateRoom(int index, Room updatedRoom) {
-    setState(() {
-      rooms[index] = updatedRoom;
-    });
-  }
-
-  // fungsi untuk menghaous kamar yang sudah ada
-  void _deleteRoom(int index, Room deletedRoom) {
-    setState(() {
-      rooms.removeAt(index);
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
-    List<Room> filteredRooms = rooms.where((room) {
-      if (filterStatus == 'Semua') return true;
-      if (filterStatus == 'Kosong') return !room.isOccupied;
-      return room.isOccupied;
-    }).toList();
+    // List<Room> filteredRooms = rooms.where((room) {
+    //   if (filterStatus == 'Semua') return true;
+    //   if (filterStatus == 'Kosong') return !room.isOccupied;
+    //   return room.isOccupied;
+    // }).toList();
 
-    int totalRooms = rooms.length;
-    int occupiedRooms = rooms.where((room) => room.isOccupied).length;
-    int availableRooms = totalRooms - occupiedRooms;
+    // int totalRooms = rooms.length;
+    // int occupiedRooms = rooms.where((room) => room.isOccupied).length;
+    // int availableRooms = totalRooms - occupiedRooms;
 
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       backgroundColor: Colors.grey[50],
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -79,18 +43,18 @@ class _KamarPageState extends State<KamarPage> {
             contain: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildStatCard(
-                  'Total',
-                  '$totalRooms',
-                ),
-                _buildStatCard(
-                  'Terisi',
-                  '$occupiedRooms',
-                ),
-                _buildStatCard(
-                  'Kosong',
-                  '$availableRooms',
-                ),
+                // _buildStatCard(
+                //   'Total',
+                //   '$totalRooms',
+                // ),
+                // _buildStatCard(
+                //   'Terisi',
+                //   '$occupiedRooms',
+                // ),
+                // _buildStatCard(
+                //   'Kosong',
+                //   '$availableRooms',
+                // ),
               ],
             ),
           ),
@@ -116,40 +80,59 @@ class _KamarPageState extends State<KamarPage> {
                     ),
                     Expanded(
                         child: _buildFilterTap(
-                            'Kosong', filterStatus == 'Kosong')),
+                            'Tersedia', filterStatus == 'Tersedia')),
                     Expanded(
                         child: _buildFilterTap(
-                            'Terisi', filterStatus == 'Terisi')),
+                            'Terisi', filterStatus == 'terisi')),
                   ],
                 ),
               ],
             ),
           ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: GridView.builder(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 12,
-                  mainAxisSpacing: 12,
-                  childAspectRatio: 1.1,
-                ),
-                itemCount: filteredRooms.length,
-                itemBuilder: (context, index) {
-                  return GestureDetector(
-                    onTap: () {
-                      // Navigasi ke halaman detail untuk mengedit kamar yang dipilih
-                      _ForminputKamar(
-                        room: filteredRooms[index],
-                        index: index,
+          FutureBuilder<List<Kamar>>(
+            future: DatabaseHelper().getAllKamar(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
+
+              if (snapshot.hasError) {
+                return Center(
+                    child: Text("Terjadi kesalahan: ${snapshot.error}"));
+              }
+
+              if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return const Center(child: EmptyPage());
+              }
+
+              return Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: GridView.builder(
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      crossAxisSpacing: 12,
+                      mainAxisSpacing: 12,
+                      childAspectRatio: 1.1,
+                    ),
+                    itemCount: snapshot.data!.length,
+                    itemBuilder: (context, index) {
+                      // Ambil data satu per satu
+                      Kamar kamar = snapshot.data![index];
+
+                      return GestureDetector(
+                        onTap: () {
+                          _ForminputKamar(room: kamar, index: index);
+                        },
+                        // Gunakan variabel 'kamar' secara langsung
+                        child: _buildRoomCard(kamar: kamar),
                       );
                     },
-                    child: _buildRoomCard(filteredRooms[index]),
-                  );
-                },
-              ),
-            ),
+                  ),
+                ),
+              );
+            },
           ),
         ],
       ),
@@ -157,7 +140,7 @@ class _KamarPageState extends State<KamarPage> {
   }
 
   // form tambah dan edit kamar
-  void _ForminputKamar({Room? room, required int index}) async {
+  void _ForminputKamar({Kamar? room, int? index}) async {
     // Tangkap result dari dialog
     final result = await showGeneralDialog(
       context: context,
@@ -180,38 +163,6 @@ class _KamarPageState extends State<KamarPage> {
         );
       },
     );
-
-    // Logika eksekusi setelah dialog tertutup
-    if (result != null) {
-      // 1. LOGIKA HAPUS
-      if (result == 'delete') {
-        int originalIndex =
-            rooms.indexWhere((r) => r.roomNumber == room?.roomNumber);
-        if (originalIndex != -1) {
-          setState(() {
-            rooms.removeAt(originalIndex);
-          });
-          _showSnackBar('Kamar berhasil dihapus');
-        }
-      }
-
-      // 2. LOGIKA TAMBAH / EDIT
-      else if (result is Room) {
-        if (index == -1) {
-          // Tambah Baru
-          _addNewRoom(result);
-          _showSnackBar('Kamar berhasil ditambahkan');
-        } else {
-          // Update/Edit
-          int originalIndex =
-              rooms.indexWhere((r) => r.roomNumber == room?.roomNumber);
-          if (originalIndex != -1) {
-            _updateRoom(originalIndex, result);
-            _showSnackBar('Kamar berhasil diperbarui');
-          }
-        }
-      }
-    }
   }
 
 // Fungsi pembantu snackbar agar kode lebih bersih
@@ -290,7 +241,14 @@ class _KamarPageState extends State<KamarPage> {
     );
   }
 
-  Widget _buildRoomCard(Room room) {
+  String _formatCurrency(int amount) {
+    return amount.toString().replaceAllMapped(
+          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+          (Match m) => '${m[1]}.',
+        );
+  }
+
+  Widget _buildRoomCard({Kamar? kamar}) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -308,7 +266,7 @@ class _KamarPageState extends State<KamarPage> {
           Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
-              color: room.isOccupied
+              color: kamar!.statusKamar == "terisi"
                   ? colorsApp.error.withOpacity(0.15)
                   : colorsApp.success.withOpacity(0.15),
             ),
@@ -322,12 +280,12 @@ class _KamarPageState extends State<KamarPage> {
                   'Kamar',
                   style: GoogleFonts.poppins(
                     fontSize: 12,
-                    color: Colors.grey[600],
+                    color: Colors.grey[700],
                     fontWeight: FontWeight.w500,
                   ),
                 ),
                 Text(
-                  room.roomNumber,
+                  kamar!.nomorKamar,
                   style: GoogleFonts.poppins(
                     fontSize: 28,
                     fontWeight: FontWeight.w700,
@@ -344,7 +302,7 @@ class _KamarPageState extends State<KamarPage> {
                     ),
                     const SizedBox(width: 6),
                     Text(
-                      room.roomType,
+                      kamar!.typeKamar,
                       style: GoogleFonts.poppins(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
@@ -362,7 +320,8 @@ class _KamarPageState extends State<KamarPage> {
                     ),
                     const SizedBox(width: 6),
                     Text(
-                      room.harga,
+                      // 'Rp ${_formatCurrency(kamar.hargaKamar ? '-')}',
+                      kamar.hargaKamar.toString(),
                       style: GoogleFonts.poppins(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
@@ -376,7 +335,7 @@ class _KamarPageState extends State<KamarPage> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: room.isOccupied
+                    color: kamar.statusKamar == "terisi"
                         ? colorsApp.error.withOpacity(0.12)
                         : colorsApp.success.withOpacity(0.12),
                     borderRadius: BorderRadius.circular(20),
@@ -389,18 +348,18 @@ class _KamarPageState extends State<KamarPage> {
                         height: 8,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: room.isOccupied
+                          color: kamar.statusKamar == "terisi"
                               ? colorsApp.error
                               : colorsApp.success,
                         ),
                       ),
                       const SizedBox(width: 6),
                       Text(
-                        room.isOccupied ? 'Terisi' : 'Kosong',
+                        kamar.statusKamar,
                         style: GoogleFonts.poppins(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
-                          color: room.isOccupied
+                          color: kamar.statusKamar == "terisi"
                               ? colorsApp.error
                               : colorsApp.success,
                         ),
@@ -419,13 +378,17 @@ class _KamarPageState extends State<KamarPage> {
               height: 36,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: room.isOccupied
+                color: kamar.statusKamar == "terisi"
                     ? Colors.red.withOpacity(0.2)
                     : Colors.green.withOpacity(0.2),
               ),
               child: Icon(
-                room.isOccupied ? Icons.person : Icons.person_outline,
-                color: room.isOccupied ? Colors.red[600] : Colors.green[600],
+                kamar.statusKamar == "terisi"
+                    ? Icons.person
+                    : Icons.person_outline,
+                color: kamar.statusKamar == "terisi"
+                    ? Colors.red[600]
+                    : Colors.green[600],
                 size: 20,
               ),
             ),
@@ -434,18 +397,4 @@ class _KamarPageState extends State<KamarPage> {
       ),
     );
   }
-}
-
-class Room {
-  String roomNumber;
-  bool isOccupied;
-  String roomType;
-  String harga;
-
-  Room({
-    required this.roomNumber,
-    required this.isOccupied,
-    required this.roomType,
-    required this.harga,
-  });
 }
