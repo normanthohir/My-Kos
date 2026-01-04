@@ -5,20 +5,15 @@ class CurrencyInputFormatter extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(
       TextEditingValue oldValue, TextEditingValue newValue) {
-    if (newValue.selection.baseOffset == 0) return newValue;
+    if (newValue.text.isEmpty) return newValue;
 
-    // Mengambil angka saja dari input
-    double value =
-        double.parse(newValue.text.replaceAll(RegExp(r'[^0-9]'), ''));
+    // Ambil angka saja
+    String onlyDigits = newValue.text.replaceAll(RegExp(r'[^0-9]'), '');
+    double value = double.parse(onlyDigits);
 
-    // Format menjadi Rupiah
-    final formatter = NumberFormat.currency(
-      locale: 'id',
-      symbol: 'Rp',
-      decimalDigits: 0,
-    );
-
-    String newText = formatter.format(value).replaceAll(',', '.');
+    // Format dengan titik sebagai pemisah ribuan, tanpa simbol mata uang
+    final formatter = NumberFormat.decimalPattern('id');
+    String newText = formatter.format(value);
 
     return newValue.copyWith(
       text: newText,

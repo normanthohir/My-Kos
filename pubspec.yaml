@@ -40,6 +40,7 @@ dependencies:
   intl: ^0.20.2
   sqflite: ^2.4.1
   path: ^1.9.0
+  top_snackbar_flutter: ^3.3.0
 
 dev_dependencies:
   flutter_test:

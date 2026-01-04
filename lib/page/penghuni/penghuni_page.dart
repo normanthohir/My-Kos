@@ -39,21 +39,11 @@ class _PenghuniPageState extends State<PenghuniPage> {
     _penghuniList.addAll([
       {
         'id': 1,
-        'nama': 'Siti Milaa',
+        'nama': 'Siti',
         'status': true,
         'kamar': '112',
         'no_hp': '081256151551',
         'harga': '400000',
-        'tgl_masuk': '30-05-2024',
-        'tgl_keluar': ''
-      },
-      {
-        'id': 2,
-        'nama': 'Ahmad Fauzi',
-        'status': true,
-        'kamar': '122',
-        'no_hp': '081156157878',
-        'harga': '500000',
         'tgl_masuk': '30-05-2024',
         'tgl_keluar': ''
       },
@@ -66,26 +56,6 @@ class _PenghuniPageState extends State<PenghuniPage> {
         'harga': '400000',
         'tgl_masuk': '30-05-2025',
         'tgl_keluar': '10-12-2025'
-      },
-      {
-        'id': 4,
-        'nama': 'Swisto Bagus',
-        'status': false,
-        'kamar': '102',
-        'no_hp': '081256151551',
-        'harga': '400000',
-        'tgl_masuk': '20-01-2025',
-        'tgl_keluar': '01-08-2025'
-      },
-      {
-        'id': 5,
-        'nama': 'Siti Milaa',
-        'status': true,
-        'kamar': '212',
-        'no_hp': '081256151551',
-        'harga': '600000',
-        'tgl_masuk': '30-05-2024',
-        'tgl_keluar': ''
       },
     ]);
   }

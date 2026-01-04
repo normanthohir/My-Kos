@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:intl/intl.dart';
 import 'package:may_kos/config/theme.dart';
 import 'package:may_kos/data/databases/database_helper.dart';
 import 'package:may_kos/data/models/kamar.dart';
 import 'package:may_kos/page/empty_page/empty_page.dart';
 import 'package:may_kos/page/kamar/kamar_form.dart';
+import 'package:may_kos/utils/formatters.dart';
 import 'package:may_kos/widgets/widgetApbarConten.dart';
 
 class KamarPage extends StatefulWidget {
@@ -17,18 +19,35 @@ class KamarPage extends StatefulWidget {
 
 class _KamarPageState extends State<KamarPage> {
   String filterStatus = 'Semua';
+  List<Kamar> allKamar = [];
+
+//  mengambil data kamar dari Database
+  Future<void> _ambilData() async {
+    final data = await DatabaseHelper().getAllKamar();
+    setState(() {
+      allKamar = data;
+    });
+  }
 
   @override
-  Widget build(BuildContext context) {
-    // List<Room> filteredRooms = rooms.where((room) {
-    //   if (filterStatus == 'Semua') return true;
-    //   if (filterStatus == 'Kosong') return !room.isOccupied;
-    //   return room.isOccupied;
-    // }).toList();
+  void initState() {
+    super.initState();
+    _ambilData();
+  }
 
-    // int totalRooms = rooms.length;
-    // int occupiedRooms = rooms.where((room) => room.isOccupied).length;
-    // int availableRooms = totalRooms - occupiedRooms;
+  Widget build(BuildContext context) {
+    // 1. Logika Filter untuk ListView
+    List<Kamar> filteredRooms = allKamar.where((room) {
+      if (filterStatus == 'Semua') return true;
+      return room.statusKamar.toLowerCase() == filterStatus.toLowerCase();
+    }).toList();
+
+    int totalRooms = allKamar.length;
+    int terisiRooms =
+        allKamar.where((room) => room.statusKamar == 'terisi').length;
+
+    int tersediaRooms =
+        allKamar.where((room) => room.statusKamar == 'Tersedia').length;
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
@@ -43,18 +62,18 @@ class _KamarPageState extends State<KamarPage> {
             contain: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                // _buildStatCard(
-                //   'Total',
-                //   '$totalRooms',
-                // ),
-                // _buildStatCard(
-                //   'Terisi',
-                //   '$occupiedRooms',
-                // ),
-                // _buildStatCard(
-                //   'Kosong',
-                //   '$availableRooms',
-                // ),
+                _buildStatCard(
+                  'Total',
+                  '$totalRooms',
+                ),
+                _buildStatCard(
+                  'Terisi',
+                  '$terisiRooms',
+                ),
+                _buildStatCard(
+                  'Tersedia',
+                  '$tersediaRooms',
+                ),
               ],
             ),
           ),
@@ -105,6 +124,18 @@ class _KamarPageState extends State<KamarPage> {
                 return const Center(child: EmptyPage());
               }
 
+              List<Kamar> semuaKamar = snapshot.data!;
+
+              List<Kamar> filteredRooms = semuaKamar.where((room) {
+                if (filterStatus == 'Semua') return true;
+                return room.statusKamar.trim().toLowerCase() ==
+                    filterStatus.trim().toLowerCase();
+              }).toList();
+
+              if (filteredRooms.isEmpty) {
+                return const EmptyPage();
+              }
+
               return Expanded(
                 child: Padding(
                   padding: const EdgeInsets.all(12),
@@ -116,16 +147,14 @@ class _KamarPageState extends State<KamarPage> {
                       mainAxisSpacing: 12,
                       childAspectRatio: 1.1,
                     ),
-                    itemCount: snapshot.data!.length,
+                    itemCount: filteredRooms.length,
                     itemBuilder: (context, index) {
-                      // Ambil data satu per satu
-                      Kamar kamar = snapshot.data![index];
+                      Kamar kamar = filteredRooms[index];
 
                       return GestureDetector(
                         onTap: () {
                           _ForminputKamar(room: kamar, index: index);
                         },
-                        // Gunakan variabel 'kamar' secara langsung
                         child: _buildRoomCard(kamar: kamar),
                       );
                     },
@@ -163,6 +192,11 @@ class _KamarPageState extends State<KamarPage> {
         );
       },
     );
+    setState(() {});
+    // reload data
+    if (result == true) {
+      _ambilData();
+    }
   }
 
 // Fungsi pembantu snackbar agar kode lebih bersih
@@ -241,13 +275,6 @@ class _KamarPageState extends State<KamarPage> {
     );
   }
 
-  String _formatCurrency(int amount) {
-    return amount.toString().replaceAllMapped(
-          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-          (Match m) => '${m[1]}.',
-        );
-  }
-
   Widget _buildRoomCard({Kamar? kamar}) {
     return Container(
       decoration: BoxDecoration(
@@ -285,7 +312,7 @@ class _KamarPageState extends State<KamarPage> {
                   ),
                 ),
                 Text(
-                  kamar!.nomorKamar,
+                  kamar.nomorKamar,
                   style: GoogleFonts.poppins(
                     fontSize: 28,
                     fontWeight: FontWeight.w700,
@@ -302,7 +329,7 @@ class _KamarPageState extends State<KamarPage> {
                     ),
                     const SizedBox(width: 6),
                     Text(
-                      kamar!.typeKamar,
+                      kamar.typeKamar,
                       style: GoogleFonts.poppins(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
@@ -320,8 +347,8 @@ class _KamarPageState extends State<KamarPage> {
                     ),
                     const SizedBox(width: 6),
                     Text(
-                      // 'Rp ${_formatCurrency(kamar.hargaKamar ? '-')}',
-                      kamar.hargaKamar.toString(),
+                      NumberFormat.decimalPattern('id')
+                          .format(kamar.hargaKamar),
                       style: GoogleFonts.poppins(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,

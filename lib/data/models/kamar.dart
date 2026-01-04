@@ -29,7 +29,7 @@ class Kamar {
       nomorKamar: map['nomor_kamar'] ?? "",
       typeKamar: map['type_kamar'],
       hargaKamar: (map['harga_kamar']),
-      statusKamar: map['status'] ?? 'Tersedia',
+      statusKamar: map['status_kamar'] ?? 'Tersedia',
     );
   }
 }

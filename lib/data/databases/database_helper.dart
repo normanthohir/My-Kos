@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:may_kos/data/models/kamar.dart';
+import 'package:may_kos/data/models/penghuni.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
@@ -88,11 +89,11 @@ class DatabaseHelper {
     return List.generate(maps.length, (i) => Kamar.fromMap(maps[i]));
   }
 
-  Future<List<Kamar>> getKamarKosong() async {
+  Future<List<Kamar>> getKamarTersedia() async {
     Database db = await database;
     final List<Map<String, dynamic>> maps = await db.query(
       'kamar',
-      where: 'status_kosong = ?',
+      where: 'status_kamar = ?',
       whereArgs: ['Tersedia'],
     );
     return List.generate(maps.length, (i) => Kamar.fromMap(maps[i]));
@@ -128,5 +129,31 @@ class DatabaseHelper {
       where: 'id = ?',
       whereArgs: [id],
     );
+  }
+
+  Future<bool> cekNomorKamar(String nomor, {int? idTerpasang}) async {
+    final db = await database;
+    // Cari nomor kamar yang sama, tapi abaikan jika ID-nya milik kamar ini sendiri (saat update)
+    final result = await db.query(
+      'kamar',
+      where: 'nomor_kamar = ? AND id != ?',
+      whereArgs: [nomor, idTerpasang ?? -1],
+    );
+    return result.isNotEmpty;
+  }
+
+  // Crud Penghuni
+  Future<int> insertpenghuni(Penghuni penghuni) async {
+    Database db = await database;
+    return await db.insert(
+      'penghuni',
+      penghuni.toMap(),
+    );
+  }
+
+  Future<List<Penghuni>> gettAllpenghuni() async {
+    Database db = await database;
+    List<Map<String, dynamic>> maps = await db.query('penghuni');
+    return List.generate(maps.length, (i) => Penghuni.fromMap(maps[i]));
   }
 }
