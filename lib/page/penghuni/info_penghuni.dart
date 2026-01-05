@@ -2,18 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:may_kos/config/theme.dart';
+import 'package:may_kos/data/models/penghuni.dart';
+import 'package:may_kos/utils/date_picker.dart';
+import 'package:may_kos/utils/duration_util.dart';
+import 'package:may_kos/widgets/widget_CurrencyInputFormatter.dart';
 
 class DetailPenghuniDialog extends StatelessWidget {
-  final Map<String, dynamic> penghuniData;
+  final Penghuni penghuni;
 
   const DetailPenghuniDialog({
     super.key,
-    required this.penghuniData,
+    required this.penghuni,
   });
 
   @override
   Widget build(BuildContext context) {
-    final isAktif = penghuniData['tanggalKeluar']?.isEmpty ?? true;
+    final isAktif = penghuni.tanggalKeluar == null;
     final colorScheme = Theme.of(context).colorScheme;
 
     return Dialog(
@@ -84,7 +88,7 @@ class DetailPenghuniDialog extends StatelessWidget {
                         ),
                         child: Center(
                           child: Text(
-                            getInitials(penghuniData['nama'] ?? ''),
+                            getInitials(penghuni.namaPenghuni),
                             style: GoogleFonts.poppins(
                               fontSize: 28,
                               fontWeight: FontWeight.w700,
@@ -101,7 +105,7 @@ class DetailPenghuniDialog extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              penghuniData['nama'] ?? '',
+                              penghuni.namaPenghuni,
                               style: GoogleFonts.poppins(
                                 fontSize: 22,
                                 fontWeight: FontWeight.w700,
@@ -162,7 +166,7 @@ class DetailPenghuniDialog extends StatelessWidget {
                   _buildInfoRow(
                     icon: Icons.phone_rounded,
                     title: 'Nomor Telepon',
-                    value: penghuniData['nomorTelepon'] ?? '-',
+                    value: '081236128373',
                     context: context,
                   ),
                   const SizedBox(height: 16),
@@ -170,7 +174,7 @@ class DetailPenghuniDialog extends StatelessWidget {
                   _buildInfoRow(
                     icon: Icons.meeting_room_rounded,
                     title: 'Nomor Kamar',
-                    value: penghuniData['kamar'] ?? '-',
+                    value: penghuni.nomorKamar.toString(),
                     context: context,
                     valueColor: colorScheme.primary,
                   ),
@@ -206,13 +210,7 @@ class DetailPenghuniDialog extends StatelessWidget {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              NumberFormat.currency(
-                                locale: 'id',
-                                symbol: 'Rp ',
-                                decimalDigits:
-                                    0, // Set ke 0 agar tidak ada ,00 di belakang
-                              ).format(
-                                  int.parse(penghuniData['harga'].toString())),
+                              "Rp ${NumberFormat.decimalPattern('id').format(penghuni.hargaKamar)}",
                               style: GoogleFonts.poppins(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
@@ -229,7 +227,7 @@ class DetailPenghuniDialog extends StatelessWidget {
                   _buildInfoRow(
                     icon: Icons.calendar_today_rounded,
                     title: 'Tanggal Masuk',
-                    value: formatDate(penghuniData['tanggalMasuk'] ?? '-'),
+                    value: DatePickerUtil.formatTanggal(penghuni.tanggalMasuk),
                     context: context,
                   ),
 
@@ -238,7 +236,8 @@ class DetailPenghuniDialog extends StatelessWidget {
                     _buildInfoRow(
                       icon: Icons.logout_rounded,
                       title: 'Tanggal Keluar',
-                      value: formatDate(penghuniData['tanggalKeluar'] ?? '-'),
+                      value:
+                          DatePickerUtil.formatTanggal(penghuni.tanggalKeluar),
                       context: context,
                       valueColor: Colors.red,
                     ),
@@ -274,7 +273,7 @@ class DetailPenghuniDialog extends StatelessWidget {
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
-                            'Penghuni telah menempati kamar ini selama ${calculateDuration(penghuniData['tanggalMasuk'])}',
+                            'Penghuni telah menempati kamar ini selama ${DurationUtil.calculateDuration(penghuni.tanggalMasuk)}.',
                             style: GoogleFonts.poppins(
                               fontSize: 13,
                               color: Colors.grey[700],
@@ -334,7 +333,7 @@ class DetailPenghuniDialog extends StatelessWidget {
                       onPressed: () {
                         Navigator.pop(context); // Tutup detail
                         // Tambahkan logika untuk edit di sini
-                        // Misalnya: showPenghuniModal(context, penghuniData, true);
+                        // Misalnya: showPenghuniModal(context, penghuni, true);
                       },
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 14),
@@ -469,34 +468,5 @@ class DetailPenghuniDialog extends StatelessWidget {
       }
     }
     return date;
-  }
-
-  String calculateDuration(String startDate) {
-    if (startDate.isEmpty) return '-';
-
-    try {
-      final parts = startDate.split(' ');
-      if (parts.length == 3) {
-        final start = DateTime(
-          int.parse(parts[2]),
-          int.parse(parts[1]),
-          int.parse(parts[0]),
-        );
-        final now = DateTime.now();
-        final difference = now.difference(start);
-
-        final months = (difference.inDays / 30).floor();
-        final days = difference.inDays % 30;
-
-        if (months > 0) {
-          return '$months bulan ${days > 0 ? '$days hari' : ''}';
-        } else {
-          return '${difference.inDays} hari';
-        }
-      }
-    } catch (e) {
-      return '-';
-    }
-    return '-';
   }
 }

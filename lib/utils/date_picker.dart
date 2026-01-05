@@ -2,7 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class DatePickerUtil {
-  // Fungsi Date Picker biasa (yang sebelumnya)
+  // Gunakan fungsi ini di dalam widget Text()
+  static String formatTanggal(DateTime? date) {
+    if (date == null) return "-";
+    // Menghasilkan format: 05 Jan 2026
+    return DateFormat('dd MMMM yyyy').format(date);
+  }
+
   static Future<void> selectDate({
     required BuildContext context,
     required DateTime? initialDate,

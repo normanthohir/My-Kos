@@ -143,17 +143,116 @@ class DatabaseHelper {
   }
 
   // Crud Penghuni
-  Future<int> insertpenghuni(Penghuni penghuni) async {
-    Database db = await database;
-    return await db.insert(
-      'penghuni',
-      penghuni.toMap(),
-    );
+  Future<void> insertPenghuni(Penghuni penghuni) async {
+    final db = await database;
+
+    // Kita gunakan Transaction agar jika salah satu gagal, semua dibatalkan (aman)
+    await db.transaction((txn) async {
+      // Simpan data penghuni
+      await txn.insert('penghuni', penghuni.toMap());
+
+      //  Update status kamar menjadi 'terisi'
+      if (penghuni.kamarId != null) {
+        await txn.update(
+          'kamar',
+          {
+            'status_kamar': 'terisi'
+          }, // Pastikan string 'terisi' sama dengan di database kamu
+          where: 'id = ?',
+          whereArgs: [penghuni.kamarId],
+        );
+      }
+    });
   }
 
-  Future<List<Penghuni>> gettAllpenghuni() async {
+  Future<void> updatePenghuni(Penghuni penghuni, int? idKamarLama) async {
+    final db = await database;
+
+    await db.transaction((txn) async {
+      // 1. Update data penghuni di tabel penghuni
+      await txn.update(
+        'penghuni',
+        penghuni.toMap(),
+        where: 'id = ?',
+        whereArgs: [penghuni.id],
+      );
+
+      // 2. Logika Perpindahan Kamar
+      if (idKamarLama != penghuni.kamarId) {
+        // Jika kamar berubah, kosongkan kamar lama
+        if (idKamarLama != null) {
+          await txn.update(
+            'kamar',
+            {'status_kamar': 'Tersedia'},
+            where: 'id = ?',
+            whereArgs: [idKamarLama],
+          );
+        }
+
+        // Isi kamar yang baru
+        if (penghuni.kamarId != null) {
+          await txn.update(
+            'kamar',
+            {'status_kamar': 'terisi'},
+            where: 'id = ?',
+            whereArgs: [penghuni.kamarId],
+          );
+        }
+      }
+    });
+  }
+
+  Future<List<Penghuni>> getAllPenghuni() async {
     Database db = await database;
-    List<Map<String, dynamic>> maps = await db.query('penghuni');
+
+    // p adalah alias untuk penghuni, k adalah alias untuk kamar
+    final List<Map<String, dynamic>> maps = await db.rawQuery('''
+    SELECT 
+      p.*, 
+      k.nomor_kamar, 
+      k.harga_kamar
+    FROM penghuni p
+    LEFT JOIN kamar k ON p.kamar_id = k.id
+    ORDER BY p.id DESC
+  ''');
+
     return List.generate(maps.length, (i) => Penghuni.fromMap(maps[i]));
+  }
+
+  Future<void> deletePenghuni(int idPenghuni, int idKamar) async {
+    final db = await database;
+    await db.transaction((txn) async {
+      await txn.delete('penghuni', where: 'id = ?', whereArgs: [idPenghuni]);
+      await txn.update(
+        'kamar',
+        {'status_kamar': 'Tersedia'},
+        where: 'id = ?',
+        whereArgs: [idKamar],
+      );
+    });
+  }
+
+  Future<List<Kamar>> getKamarUntukEdit(int? currentKamarId) async {
+    final db = await database;
+
+    if (currentKamarId == null) {
+      // Mode Tambah Baru: Hanya ambil yang Tersedia
+      return (await db.query(
+        'kamar',
+        where: 'status_kamar = ?',
+        whereArgs: ['Tersedia'],
+      ))
+          .map((e) => Kamar.fromMap(e))
+          .toList();
+    } else {
+      // Mode Edit: Ambil yang Tersedia ATAU kamar miliknya saat ini
+      return (await db.query(
+        'kamar',
+        where: 'status_kamar = ? OR id = ?',
+        whereArgs: ['Tersedia', currentKamarId],
+      ))
+          .map((e) => Kamar.fromMap(e))
+          .toList();
+    }
   }
 }

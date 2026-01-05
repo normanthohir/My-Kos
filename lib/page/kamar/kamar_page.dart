@@ -36,12 +36,14 @@ class _KamarPageState extends State<KamarPage> {
   }
 
   Widget build(BuildContext context) {
-    // 1. Logika Filter untuk ListView
+    //  Filter untuk ListView
     List<Kamar> filteredRooms = allKamar.where((room) {
       if (filterStatus == 'Semua') return true;
-      return room.statusKamar.toLowerCase() == filterStatus.toLowerCase();
+      return room.statusKamar.trim().toLowerCase() ==
+          filterStatus.trim().toLowerCase();
     }).toList();
 
+    // hitung kamar total kamar
     int totalRooms = allKamar.length;
     int terisiRooms =
         allKamar.where((room) => room.statusKamar == 'terisi').length;
@@ -124,14 +126,6 @@ class _KamarPageState extends State<KamarPage> {
                 return const Center(child: EmptyPage());
               }
 
-              List<Kamar> semuaKamar = snapshot.data!;
-
-              List<Kamar> filteredRooms = semuaKamar.where((room) {
-                if (filterStatus == 'Semua') return true;
-                return room.statusKamar.trim().toLowerCase() ==
-                    filterStatus.trim().toLowerCase();
-              }).toList();
-
               if (filteredRooms.isEmpty) {
                 return const EmptyPage();
               }
@@ -197,13 +191,6 @@ class _KamarPageState extends State<KamarPage> {
     if (result == true) {
       _ambilData();
     }
-  }
-
-// Fungsi pembantu snackbar agar kode lebih bersih
-  void _showSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
   }
 
   Widget _buildStatCard(
