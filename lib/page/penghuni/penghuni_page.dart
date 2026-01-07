@@ -3,16 +3,21 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:may_kos/config/theme.dart';
 import 'package:may_kos/data/databases/database_helper.dart';
+import 'package:may_kos/data/models/kamar.dart';
 import 'package:may_kos/data/models/penghuni.dart';
 import 'package:may_kos/page/empty_page/empty_page.dart';
 import 'package:may_kos/page/penghuni/info_penghuni.dart';
 import 'package:may_kos/page/penghuni/penghuni_Form.dart';
 import 'package:may_kos/utils/date_picker.dart';
+import 'package:may_kos/widgets/Widget_DeleteDialog.dart';
 import 'package:may_kos/widgets/widgetApbarConten.dart';
 import 'package:may_kos/widgets/widget_Search.dart';
+import 'package:top_snackbar_flutter/custom_snack_bar.dart';
+import 'package:top_snackbar_flutter/top_snack_bar.dart';
 
 class PenghuniPage extends StatefulWidget {
-  const PenghuniPage({super.key});
+  final Penghuni? penghuni;
+  const PenghuniPage({super.key, this.penghuni});
 
   @override
   State<PenghuniPage> createState() => _PenghuniPageState();
@@ -22,17 +27,47 @@ class _PenghuniPageState extends State<PenghuniPage> {
   // Default: Semua
   String _selectedFilter = 'Semua';
   // semua penghuni
-  List<Penghuni> allPenghuni = [];
-  //  mengambil data kamar dari Database
-  Future<void> _ambilData() async {
+  List<Penghuni> _allPenghuni = [];
+  List<Penghuni> _filteredPenghuni = [];
+  // kamar
+  List<Kamar> _allKamar = [];
+  bool isLoading = true;
+
+  //  mengambil data penghuni dari Database
+  void _loadData() async {
     final data = await DatabaseHelper().getAllPenghuni();
+    final dataKamar = await DatabaseHelper().getAllKamar();
     setState(() {
-      allPenghuni = data;
+      _allPenghuni = data;
+      _filteredPenghuni = data;
+      _allKamar = dataKamar;
+      isLoading = false;
     });
   }
 
+  // total penghuni aktif
+  int get totalPenghuniAktif =>
+      _allPenghuni.where((p) => p.statusPenghuni == true).length;
+  // total penghuni keluar
+  int get totalPenghuniKeluar =>
+      _allPenghuni.where((p) => p.statusPenghuni == false).length;
+  // totla kamar
+  int get totalkamar => _allKamar.length;
+  // Menghitung penghuni yang masuk dalam 7 hari terakhir
+  int get totalPenghuniBaru {
+    final now = DateTime.now();
+    final sevenDaysAgo = now.subtract(const Duration(days: 7));
+
+    return _allPenghuni.where((p) {
+      // Pastikan hanya menghitung yang statusnya masih Aktif
+      // dan tanggal masuknya setelah/sama dengan 7 hari yang lalu
+      return p.statusPenghuni == true && p.tanggalMasuk.isAfter(sevenDaysAgo);
+    }).length;
+  }
+
+  // filtter aktif/keluar
   List<Penghuni> get filteredPenghuni {
-    return allPenghuni.where((p) {
+    return _allPenghuni.where((p) {
       if (_selectedFilter == 'Aktif') {
         return p.statusPenghuni == true;
       } else if (_selectedFilter == 'Keluar') {
@@ -43,9 +78,77 @@ class _PenghuniPageState extends State<PenghuniPage> {
     }).toList();
   }
 
+  // keluar penghuni
+  void _keluarPenghuni(Penghuni data) async {
+    final idPenghuni = data.id;
+    final idKamar = data.kamarId;
+    try {
+      await DatabaseHelper().keluarPenghuni(idPenghuni, idKamar);
+      _loadData();
+
+      if (!mounted) return;
+      showTopSnackBar(
+        Overlay.of(context),
+        const CustomSnackBar.success(message: "Penghuni berhasil keluar"),
+      );
+    } catch (e) {
+      print("Error keluar: $e");
+    }
+  }
+
+  // hapus penghuni
+  void _hapusPenghuni(Penghuni data) async {
+    // Panggil Dialog
+    bool? confirm = await SharedDeleteDialog.show(
+      context,
+      title: "Hapus Penghuni",
+      content:
+          "Apakah Anda yakin ingin menghapus Penghuni ${data.namaPenghuni}?", // Gunakan 'data', bukan 'widget'
+    );
+
+    // Eksekusi jika 'Hapus' ditekan
+    if (confirm == true) {
+      try {
+        // Ambil ID dari 'data'
+        await DatabaseHelper().deletePenghuni(data.id!);
+
+        if (!mounted) return;
+
+        showTopSnackBar(
+          Overlay.of(context),
+          const CustomSnackBar.success(
+            message: "Data penghuni berhasil dihapus",
+          ),
+        );
+
+        // Panggil fungsi untuk refresh list (misal: _loadData())
+        _loadData();
+      } catch (e) {
+        debugPrint("Error Hapus: $e");
+      }
+    }
+  }
+
+  // untu fitur searc
+  void _filterPenghuni(String query) {
+    final filtered = _allPenghuni.where((p) {
+      final searchInput = query.toLowerCase();
+      final nama = p.namaPenghuni.toLowerCase();
+
+      // Sesuaikan p.nomorKamar dengan nama field di model atau database kamu
+      final nomorKamar = p.nomorKamar?.toString().toLowerCase() ?? "";
+
+      return nama.contains(searchInput) || nomorKamar.contains(searchInput);
+    }).toList();
+
+    setState(() {
+      _filteredPenghuni = filtered;
+    });
+  }
+
   void initState() {
     super.initState();
-    _ambilData();
+    _loadData();
   }
 
   @override
@@ -68,28 +171,28 @@ class _PenghuniPageState extends State<PenghuniPage> {
                 _buildCard(
                   context,
                   'Aktif',
-                  '20',
+                  '${totalPenghuniAktif}',
                   Icons.person,
                   Colors.green,
                 ),
                 _buildCard(
                   context,
                   'Keluar',
-                  '5',
+                  '${totalPenghuniKeluar}',
                   Icons.logout,
                   Colors.red,
                 ),
                 _buildCard(
                   context,
                   'Kamar',
-                  '8',
+                  '${totalkamar}',
                   Icons.hotel,
                   Colors.purple,
                 ),
                 _buildCard(
                   context,
                   'Baru',
-                  '3',
+                  totalPenghuniBaru.toString(),
                   Icons.new_releases,
                   Colors.red,
                 ),
@@ -97,53 +200,43 @@ class _PenghuniPageState extends State<PenghuniPage> {
             ),
           ),
           // search....
-          WidgetSearch(title: 'Cari penghuni & kamar', onTap: () {}),
+          WidgetSearch(
+            title: 'Cari penghuni & nomor kamar',
+            onChanged: (value) {
+              _filterPenghuni(value);
+            },
+          ),
 
           Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Row(
                 children: [
-                  _buildStatusTab(label: 'Semua', isAktif: null),
-                  _buildStatusTab(label: 'Aktif', isAktif: true),
-                  _buildStatusTab(label: 'Keluar', isAktif: false),
+                  _buildStatusTab(label: 'Semua', isAktif: 'Semua'),
+                  _buildStatusTab(label: 'Aktif', isAktif: 'Aktif'),
+                  _buildStatusTab(label: 'Keluar', isAktif: 'Keluar'),
                 ],
               )),
           const SizedBox(height: 20),
 
           // List Penghun
-          FutureBuilder<List<Penghuni>>(
-            future: DatabaseHelper().getAllPenghuni(),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
-              }
-
-              if (snapshot.hasError) {
-                return Center(
-                    child: Text("Terjadi kesalahan: ${snapshot.error}"));
-              }
-
-              if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                return const Center(child: EmptyPage());
-              }
-
-              if (filteredPenghuni.isEmpty) {
-                return const EmptyPage();
-              }
-              return Expanded(
-                child: filteredPenghuni.isEmpty
-                    ? EmptyPage()
-                    : ListView.builder(
-                        padding: EdgeInsets.only(bottom: 16),
-                        itemCount: filteredPenghuni.length,
-                        itemBuilder: (context, index) {
-                          final penghuni = filteredPenghuni[index];
-                          return _buildcardPenghuni(penghuni);
-                        },
-                      ),
-              );
-            },
-          ),
+          isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : _allPenghuni.isEmpty
+                  ? const EmptyPage() // Jika database memang kosong
+                  : Expanded(
+                      child: filteredPenghuni.isEmpty
+                          ? const Center(
+                              child: Text(
+                                  "Penghuni tidak ditemukan")) // Jika pencarian tidak ada hasil
+                          : ListView.builder(
+                              padding: const EdgeInsets.only(bottom: 16),
+                              itemCount: filteredPenghuni.length,
+                              itemBuilder: (context, index) {
+                                final penghuni = filteredPenghuni[index];
+                                return _buildcardPenghuni(penghuni);
+                              },
+                            ),
+                    ),
         ],
       ),
     );
@@ -200,7 +293,7 @@ class _PenghuniPageState extends State<PenghuniPage> {
 
   Widget _buildStatusTab({
     required String label,
-    required bool? isAktif,
+    required String isAktif,
   }) {
     final isSelected = _selectedFilter == isAktif;
 
@@ -209,7 +302,7 @@ class _PenghuniPageState extends State<PenghuniPage> {
       child: InkWell(
         onTap: () {
           setState(() {
-            _selectedFilter = isAktif.toString();
+            _selectedFilter = isAktif;
           });
         },
         borderRadius: BorderRadius.circular(10),
@@ -404,19 +497,19 @@ class _PenghuniPageState extends State<PenghuniPage> {
                           ? const Text('')
                           : Row(
                               children: [
-                                Text(
-                                    "| Keluar: ${DatePickerUtil.formatTanggal(penghuni.tanggalKeluar)}"),
+                                Text(" | "),
                                 Icon(
                                   Icons.logout,
                                   size: 12,
-                                  color: Colors.grey[600],
+                                  color: colorsApp.error,
                                 ),
-                                SizedBox(width: 1),
+                                SizedBox(width: 2),
                                 Text(
-                                  penghuni.tanggalKeluar.toString(),
+                                  DatePickerUtil.formatTanggal(
+                                      penghuni.tanggalKeluar),
                                   style: TextStyle(
                                     fontSize: 12,
-                                    color: Colors.grey[700],
+                                    color: colorsApp.error,
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
@@ -442,7 +535,7 @@ class _PenghuniPageState extends State<PenghuniPage> {
                     Future.delayed(Duration.zero, () {
                       showDetailPenghuniDialogWithAnimation(
                         context: context,
-                        penghuni: penghuni, // Kirim objek model lengkap
+                        penghuni: penghuni,
                       );
                     });
                   },
@@ -478,7 +571,7 @@ class _PenghuniPageState extends State<PenghuniPage> {
                     },
                   ),
                 penghuni.statusPenghuni
-                    ? const PopupMenuItem(
+                    ? PopupMenuItem(
                         value: 'keluar',
                         child: Row(
                           children: [
@@ -487,6 +580,12 @@ class _PenghuniPageState extends State<PenghuniPage> {
                             Text('Keluar'),
                           ],
                         ),
+                        onTap: () {
+                          Future.delayed(
+                            const Duration(seconds: 0),
+                            () => _keluarPenghuni(penghuni),
+                          );
+                        },
                       )
                     : PopupMenuItem(
                         value: 'Hapus',
@@ -497,6 +596,12 @@ class _PenghuniPageState extends State<PenghuniPage> {
                             Text('Hapus'),
                           ],
                         ),
+                        onTap: () {
+                          Future.delayed(
+                            Duration(seconds: 0),
+                            () => _hapusPenghuni(penghuni),
+                          );
+                        },
                       ),
               ],
             ),
@@ -510,8 +615,8 @@ class _PenghuniPageState extends State<PenghuniPage> {
     required BuildContext context,
     final Penghuni? penghuni,
     bool isEditMode = false,
-  }) {
-    showGeneralDialog(
+  }) async {
+    final result = await showGeneralDialog(
       context: context,
       barrierDismissible: true,
       barrierLabel: '',
@@ -533,6 +638,11 @@ class _PenghuniPageState extends State<PenghuniPage> {
         );
       },
     );
+    setState(() {});
+    // reload data
+    if (result == true) {
+      _loadData();
+    }
   }
 
   // info penghuni

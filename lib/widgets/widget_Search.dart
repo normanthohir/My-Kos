@@ -6,11 +6,11 @@ class WidgetSearch extends StatelessWidget {
   const WidgetSearch({
     super.key,
     required this.title,
-    required this.onTap,
+    this.onChanged, // Ganti onTap menjadi onChanged
   });
 
   final String title;
-  final Function() onTap;
+  final Function(String)? onChanged; // Menerima String input dari TextField
 
   @override
   Widget build(BuildContext context) {
@@ -20,9 +20,7 @@ class WidgetSearch extends StatelessWidget {
         children: [
           Expanded(
             child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 16,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(12),
@@ -35,6 +33,7 @@ class WidgetSearch extends StatelessWidget {
                 ],
               ),
               child: TextField(
+                onChanged: onChanged, // Hubungkan ke sini
                 decoration: InputDecoration(
                   hintText: title,
                   border: InputBorder.none,

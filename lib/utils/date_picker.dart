@@ -6,7 +6,7 @@ class DatePickerUtil {
   static String formatTanggal(DateTime? date) {
     if (date == null) return "-";
     // Menghasilkan format: 05 Jan 2026
-    return DateFormat('dd MMMM yyyy').format(date);
+    return DateFormat('dd MM yyyy').format(date);
   }
 
   static Future<void> selectDate({

@@ -219,10 +219,27 @@ class DatabaseHelper {
     return List.generate(maps.length, (i) => Penghuni.fromMap(maps[i]));
   }
 
-  Future<void> deletePenghuni(int idPenghuni, int idKamar) async {
+  Future<void> deletePenghuni(int id) async {
     final db = await database;
     await db.transaction((txn) async {
-      await txn.delete('penghuni', where: 'id = ?', whereArgs: [idPenghuni]);
+      await txn.delete('penghuni', where: 'id = ?', whereArgs: [id]);
+    });
+  }
+
+  Future<void> keluarPenghuni(int? idPenghuni, int? idKamar) async {
+    // Jika ID tidak ada, batalkan proses
+    if (idPenghuni == null || idKamar == null) return;
+    final db = await database;
+    await db.transaction((txn) async {
+      // 1. Update status penghuni jadi tidak aktif (0)
+      await txn.update(
+        'penghuni',
+        {'status_penghuni': 0, 'tanggal_keluar': DateTime.now().toString()},
+        where: 'id = ?',
+        whereArgs: [idPenghuni],
+      );
+
+      // 2. Update status kamar kembali menjadi 'Tersedia'
       await txn.update(
         'kamar',
         {'status_kamar': 'Tersedia'},

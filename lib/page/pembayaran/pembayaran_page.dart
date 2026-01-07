@@ -181,7 +181,8 @@ class _PembayaranPageState extends State<PembayaranPage> {
           ),
 
           // Filter dan Search
-          WidgetSearch(title: 'Cari penghuni & kamar...', onTap: () {}),
+          WidgetSearch(
+              title: 'Cari penghuni & kamar...', onChanged: (value) {}),
 
           // List Tagihan
           Expanded(
