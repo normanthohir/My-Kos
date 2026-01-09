@@ -25,6 +25,8 @@ class _PembayranFormState extends State<PembayranForm> {
   DateTime? _selectedDate;
   DateTime? _selectedPeriode;
   int? _selectedPenghuniId;
+  late Future<List<Penghuni>> _penghuniFuture;
+  List<Penghuni> _allAvailablepenghunis = [];
 
   List<Penghuni> _penghuniList = [];
 
@@ -283,21 +285,31 @@ class _PembayranFormState extends State<PembayranForm> {
                     style: GoogleFonts.poppins(
                         fontSize: 18, fontWeight: FontWeight.bold)),
               ),
-              // List Penghuni
-              Expanded(
-                child: ListView.separated(
-                  padding: EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: _penghuniList.length,
-                  separatorBuilder: (context, index) => Divider(height: 1),
-                  itemBuilder: (context, index) {
-                    final penghuni = _penghuniList[index];
 
-                    return ListTile(
+              FutureBuilder<List<Penghuni>>(
+                future: _penghuniFuture,
+                // initialData: InitialData,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: CircularProgressIndicator(),
+                    );
+                  }
+
+                  // 2. Ambil data secara aman (Gunakan list kosong jika null)
+                  final penghuni = snapshot.data ?? [];
+
+                  // Simpan ke variabel global agar bisa diakses di onChanged
+                  _allAvailablepenghunis = penghuni;
+
+                  return Expanded(
+                    child: ListTile(
                       contentPadding:
                           EdgeInsets.symmetric(vertical: 8, horizontal: 12),
                       leading: CircleAvatar(
                         backgroundColor: colorsApp.primary.withOpacity(0.1),
-                        child: Text(penghuni.nomorKamar.toString(),
+                        child: Text(penghuni.toString(),
                             style: TextStyle(
                                 color: colorsApp.primary,
                                 fontWeight: FontWeight.bold)),
@@ -331,9 +343,60 @@ class _PembayranFormState extends State<PembayranForm> {
                         Navigator.pop(context);
                       },
                     );
-                  },
-                ),
+                  );
+                },
               ),
+              // List Penghuni
+              // Expanded(
+              //   child: ListView.separated(
+              //     padding: EdgeInsets.symmetric(horizontal: 16),
+              //     itemCount: _penghuniList.length,
+              //     separatorBuilder: (context, index) => Divider(height: 1),
+              //     itemBuilder: (context, index) {
+              //       final penghuni = _penghuniList[index];
+
+              //       return ListTile(
+              //         contentPadding:
+              //             EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+              //         leading: CircleAvatar(
+              //           backgroundColor: colorsApp.primary.withOpacity(0.1),
+              //           child: Text(penghuni.nomorKamar.toString(),
+              //               style: TextStyle(
+              //                   color: colorsApp.primary,
+              //                   fontWeight: FontWeight.bold)),
+              //         ),
+              //         title: Text(penghuni.namaPenghuni,
+              //             style:
+              //                 GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+              //         subtitle: Text(
+              //           "Tipe: ${(penghuni.typeKamar)}",
+              //           style: GoogleFonts.poppins(),
+              //         ),
+              //         trailing: Text(
+              //           NumberFormat.decimalPattern('id')
+              //               .format(penghuni.hargaKamar),
+              //           style: GoogleFonts.poppins(
+              //             fontWeight: FontWeight.bold,
+              //             fontSize: 13,
+              //             color: Colors.green,
+              //           ),
+              //         ),
+              //         onTap: () {
+              //           setState(() {
+              //             _selectedPenghuniId = penghuni.id;
+              //             // Ini yang Anda minta: Otomatis isi harga
+              //             _jumlahcontroller.text =
+              //                 penghuni.hargaKamar.toString();
+              //             // Jika Anda punya controller nama penghuni untuk ditampilkan di UI
+              //             _penghuniController.text =
+              //                 "${penghuni.namaPenghuni} (${penghuni.nomorKamar})";
+              //           });
+              //           Navigator.pop(context);
+              //         },
+              //       );
+              //     },
+              //   ),
+              // ),
             ],
           ),
         );
