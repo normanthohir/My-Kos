@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:intl/intl.dart';
 import 'package:may_kos/config/theme.dart';
+import 'package:may_kos/data/models/penghuni.dart';
 import 'package:may_kos/utils/date_picker.dart';
 import 'package:may_kos/widgets/widget_CurrencyInputFormatter.dart';
 import 'package:may_kos/widgets/widget_textFormField.dart';
@@ -23,64 +24,18 @@ class _PembayranFormState extends State<PembayranForm> {
   String? _selectedTypepembayaran;
   DateTime? _selectedDate;
   DateTime? _selectedPeriode;
-  final List<Map<String, dynamic>> _penghuniList = [];
-  String? _selectedPenghuniId;
+  int? _selectedPenghuniId;
+
+  List<Penghuni> _penghuniList = [];
 
   @override
   void initState() {
     super.initState();
-    // 2. Load data saat pertama kali dibuka
-    _loadDummyData();
   }
 
   @override
   void dispose() {
-    _penghuniController.dispose();
-    _dateController.dispose();
-    _jumlahcontroller.dispose();
-    _priodeController.dispose();
     super.dispose();
-  }
-
-  void _loadDummyData() {
-    _penghuniList.addAll([
-      {
-        'id': 1,
-        'nama': 'Siti Milaa',
-        'kamar': '112',
-        'tipe_kamar': 'Deluxe',
-        'no_hp': '081256151551',
-        'harga': '600000',
-        'tgl_masuk': '30-05-2024',
-      },
-      {
-        'id': 2,
-        'nama': 'Ahmad Fauzi',
-        'kamar': '122',
-        'tipe_kamar': 'Standard',
-        'no_hp': '081256151551',
-        'harga': '400000',
-        'tgl_masuk': '30-05-2024',
-      },
-      {
-        'id': 3,
-        'nama': 'Reza Maulana',
-        'kamar': '111',
-        'tipe_kamar': 'Deluxe',
-        'no_hp': '081256151551',
-        'harga': '600000',
-        'tgl_masuk': '30-05-2024',
-      },
-      {
-        'id': 4,
-        'nama': 'Fauzi Maulana',
-        'kamar': '102',
-        'tipe_kamar': 'Standard',
-        'no_hp': '081256151551',
-        'harga': '400000',
-        'tgl_masuk': '30-05-2024',
-      }
-    ]);
   }
 
   @override
@@ -331,36 +286,32 @@ class _PembayranFormState extends State<PembayranForm> {
               // List Penghuni
               Expanded(
                 child: ListView.separated(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  padding: EdgeInsets.symmetric(horizontal: 16),
                   itemCount: _penghuniList.length,
-                  separatorBuilder: (context, index) =>
-                      const Divider(height: 1),
+                  separatorBuilder: (context, index) => Divider(height: 1),
                   itemBuilder: (context, index) {
-                    final item = _penghuniList[index];
+                    final penghuni = _penghuniList[index];
+
                     return ListTile(
-                      contentPadding: const EdgeInsets.symmetric(
-                          vertical: 8, horizontal: 12),
+                      contentPadding:
+                          EdgeInsets.symmetric(vertical: 8, horizontal: 12),
                       leading: CircleAvatar(
                         backgroundColor: colorsApp.primary.withOpacity(0.1),
-                        child: Text(item['kamar'],
+                        child: Text(penghuni.nomorKamar.toString(),
                             style: TextStyle(
                                 color: colorsApp.primary,
                                 fontWeight: FontWeight.bold)),
                       ),
-                      title: Text(item['nama'],
+                      title: Text(penghuni.namaPenghuni,
                           style:
                               GoogleFonts.poppins(fontWeight: FontWeight.w600)),
                       subtitle: Text(
-                        "Tipe: ${item['tipe_kamar']}",
+                        "Tipe: ${(penghuni.typeKamar)}",
                         style: GoogleFonts.poppins(),
                       ),
                       trailing: Text(
-                        NumberFormat.currency(
-                          locale: 'id',
-                          symbol: 'Rp ',
-                          decimalDigits:
-                              0, // Set ke 0 agar tidak ada ,00 di belakang
-                        ).format(int.parse(item['harga'].toString())),
+                        NumberFormat.decimalPattern('id')
+                            .format(penghuni.hargaKamar),
                         style: GoogleFonts.poppins(
                           fontWeight: FontWeight.bold,
                           fontSize: 13,
@@ -369,12 +320,13 @@ class _PembayranFormState extends State<PembayranForm> {
                       ),
                       onTap: () {
                         setState(() {
-                          _selectedPenghuniId = item['id'].toString();
+                          _selectedPenghuniId = penghuni.id;
                           // Ini yang Anda minta: Otomatis isi harga
-                          _jumlahcontroller.text = item['harga'];
+                          _jumlahcontroller.text =
+                              penghuni.hargaKamar.toString();
                           // Jika Anda punya controller nama penghuni untuk ditampilkan di UI
                           _penghuniController.text =
-                              "${item['nama']} (${item['kamar']})";
+                              "${penghuni.namaPenghuni} (${penghuni.nomorKamar})";
                         });
                         Navigator.pop(context);
                       },

@@ -2,6 +2,7 @@ class Penghuni {
   int? id;
   String namaPenghuni;
   // String nomorhanphone;
+  String? typeKamar;
   bool statusPenghuni;
   DateTime tanggalMasuk;
   DateTime? tanggalKeluar;
@@ -16,6 +17,7 @@ class Penghuni {
     // required this.nomorhanphone,
     required this.statusPenghuni,
     required this.tanggalMasuk,
+    this.typeKamar,
     this.tanggalKeluar,
     this.kamarId,
     this.nomorKamar,
@@ -46,6 +48,7 @@ class Penghuni {
       statusPenghuni: map['status_penghuni'] == 1,
       kamarId: map['kamar_id'],
       nomorKamar: map['nomor_kamar'],
+      typeKamar: map['type_kamar'],
       hargaKamar: map['harga_kamar'] != null
           ? (map['harga_kamar'] as num).toDouble()
           : null,

@@ -1,9 +1,11 @@
+import 'dart:ffi';
+
 class Pembayaran {
   int? id;
   String namaPembayar;
   String nomorkamarPembayar;
   String metodePembayaran;
-  String jumlahPembayaran;
+  Bool jumlahPembayaran;
   bool statusPembayaran;
   DateTime priodePembayaran;
   DateTime tanggalPembayaran;

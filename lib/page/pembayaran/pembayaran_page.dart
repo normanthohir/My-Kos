@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import 'package:may_kos/config/theme.dart';
+import 'package:may_kos/data/databases/database_helper.dart';
 import 'package:may_kos/page/empty_page/empty_page.dart';
 import 'package:may_kos/page/pembayaran/pembayran_form.dart';
+import 'package:may_kos/utils/getInitials.dart';
 import 'package:may_kos/widgets/widget_Search.dart';
 
 class PembayaranPage extends StatefulWidget {
@@ -14,45 +17,46 @@ class PembayaranPage extends StatefulWidget {
 }
 
 class _PembayaranPageState extends State<PembayaranPage> {
-  final List<Map<String, dynamic>> _tagihanList = [];
+  List<Map<String, dynamic>> _tagihanList = [];
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _loadDummyData();
+    _refreshTagihan();
   }
 
-  void _loadDummyData() {
-    // Data dummy tagihan
-    _tagihanList.addAll([
-      {
-        'id': 1,
-        'nama': 'Siti Milaa',
-        'kamar': '112',
-        'periode': 'April 2024',
-        'jatuh_tempo': '10 April 2024',
-        'jumlah': 1200000,
-        'status': 'belum',
-      },
-      {
-        'id': 2,
-        'nama': 'Ahmad Fauzi',
-        'kamar': '122',
-        'periode': 'April 2024',
-        'jatuh_tempo': '10 April 2024',
-        'jumlah': 1100000,
-        'status': 'belum',
-      },
-      {
-        'id': 3,
-        'nama': 'Reza Maulana',
-        'kamar': '111',
-        'periode': 'April 2024',
-        'jatuh_tempo': '10 April 2024',
-        'jumlah': 1200000,
-        'status': 'belum',
-      },
-    ]);
+  void _refreshTagihan() async {
+    setState(() => _isLoading = true);
+
+    // Sekarang memanggil semua tunggakan tanpa terbatas 1 bulan saja
+    final data = await DatabaseHelper().getAllTunggakan();
+
+    setState(() {
+      _tagihanList = data;
+      _isLoading = false;
+    });
+  }
+
+  String _formatPeriode(dynamic bulan, dynamic tahun) {
+    if (bulan == null || tahun == null) return "Bulan/Tahun Null";
+
+    try {
+      int monthInt = int.parse(bulan.toString());
+      int yearInt = int.parse(tahun.toString());
+      DateTime date = DateTime(yearInt, monthInt);
+
+      // Pastikan sudah import 'package:intl/intl.dart';
+      return DateFormat('MMMM yyyy', 'id').format(date);
+    } catch (e) {
+      return "Format Salah";
+    }
+  }
+
+  double get _totalTagihan {
+    return _tagihanList.fold(0, (sum, item) {
+      return sum + (item['jumlah'] ?? 0).toDouble();
+    });
   }
 
   @override
@@ -136,7 +140,8 @@ class _PembayaranPageState extends State<PembayaranPage> {
                             ),
                           ),
                           Text(
-                            'Rp 3.500.000',
+                            NumberFormat.decimalPattern('id')
+                                .format(_totalTagihan),
                             style: GoogleFonts.poppins(
                               fontSize: 24,
                               fontWeight: FontWeight.w700,
@@ -186,20 +191,30 @@ class _PembayaranPageState extends State<PembayaranPage> {
 
           // List Tagihan
           Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: _tagihanList.isEmpty
-                  ? EmptyPage()
-                  : ListView.separated(
-                      itemCount: _tagihanList.length,
-                      separatorBuilder: (context, index) =>
-                          const SizedBox(height: 12),
-                      itemBuilder: (context, index) {
-                        final tagihan = _tagihanList[index];
-                        return _buildTagihanCard(tagihan);
-                      },
+            child: _isLoading
+                ? const Center(
+                    child:
+                        CircularProgressIndicator()) // Tampilkan loading saat proses
+                : RefreshIndicator(
+                    onRefresh: () async => _refreshTagihan(),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: _tagihanList.isEmpty
+                          ? const EmptyPage()
+                          : ListView.separated(
+                              padding:
+                                  const EdgeInsets.only(top: 10, bottom: 20),
+                              itemCount: _tagihanList.length,
+                              separatorBuilder: (context, index) =>
+                                  const SizedBox(height: 16),
+                              itemBuilder: (context, index) {
+                                // Data 'tagihan' di sini adalah hasil Map dari rawQuery database
+                                final tagihan = _tagihanList[index];
+                                return _buildTagihanCard(tagihan);
+                              },
+                            ),
                     ),
-            ),
+                  ),
           ),
         ],
       ),
@@ -207,6 +222,16 @@ class _PembayaranPageState extends State<PembayaranPage> {
   }
 
   Widget _buildTagihanCard(Map<String, dynamic> tagihan) {
+    // Ambil tanggal masuk untuk menentukan tanggal jatuh tempo
+    final tglMasuk = DateTime.parse(tagihan['tanggal_masuk']);
+    // final hariJatuhTempo = tglMasuk.day;
+
+    final String? bulan = tagihan['bulan'];
+    final String? tahun = tagihan['tahun'];
+
+    DateTime? datePeriode;
+    datePeriode = DateTime(int.parse(tahun!), int.parse(bulan!));
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -236,7 +261,7 @@ class _PembayaranPageState extends State<PembayaranPage> {
                 ),
                 child: Center(
                   child: Text(
-                    tagihan['nama'][0],
+                    StringUtils.getInitials(tagihan['nama'] ?? ''),
                     style: GoogleFonts.poppins(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
@@ -283,7 +308,8 @@ class _PembayaranPageState extends State<PembayaranPage> {
                       ],
                     ),
                     Text(
-                      'Kamar ${tagihan['kamar']} • ${tagihan['periode']}',
+                      'Room ${tagihan['nomor_kamar']} • Period ${datePeriode != null ? DateFormat('MMMM yyyy').format(datePeriode) // Tanpa 'id', otomatis Inggris
+                          : '-'}',
                       style: GoogleFonts.poppins(
                         fontSize: 13,
                         color: colorsApp.textTertiary,
@@ -318,7 +344,9 @@ class _PembayaranPageState extends State<PembayaranPage> {
                       ),
                     ),
                     Text(
-                      tagihan['jatuh_tempo'],
+                      tglMasuk != null
+                          ? DateFormat('dd MMM yyyy').format(tglMasuk)
+                          : '-',
                       style: GoogleFonts.poppins(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
@@ -338,7 +366,7 @@ class _PembayaranPageState extends State<PembayaranPage> {
                       ),
                     ),
                     Text(
-                      'Rp ${_formatCurrency(tagihan['jumlah'])}',
+                      'Rp ${NumberFormat.decimalPattern('id').format(tagihan['jumlah'])}',
                       style: GoogleFonts.poppins(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
@@ -420,7 +448,13 @@ class _PembayaranPageState extends State<PembayaranPage> {
         );
   }
 
-  void _showBayarModal(BuildContext context, Map<String, dynamic> tagihan) {
+  void _showBayarModal(BuildContext context, tagihan) {
+    final Jatuhtempo = DateTime.parse(tagihan['tanggal_masuk']);
+    final String? bulan = tagihan['bulan'];
+    final String? tahun = tagihan['tahun'];
+
+    DateTime? datePeriode;
+    datePeriode = DateTime(int.parse(tahun!), int.parse(bulan!));
     showDialog(
       context: context,
       builder: (context) {
@@ -457,7 +491,7 @@ class _PembayaranPageState extends State<PembayaranPage> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  '${tagihan['nama']} - Kamar ${tagihan['kamar']}',
+                  '${tagihan['nama']} - Kamar ${tagihan['nomor_kamar']}',
                   style: GoogleFonts.poppins(
                     color: colorsApp.textSecondary,
                   ),
@@ -471,9 +505,11 @@ class _PembayaranPageState extends State<PembayaranPage> {
                   ),
                   child: Column(
                     children: [
-                      _buildInfoRow('Periode', tagihan['periode']),
+                      _buildInfoRow('Periode',
+                          DateFormat('MMMM yyyy').format(datePeriode!)),
                       const SizedBox(height: 8),
-                      _buildInfoRow('Jatuh Tempo', tagihan['jatuh_tempo']),
+                      _buildInfoRow('Jatuh Tempo',
+                          DateFormat('dd MMM yyyy').format(Jatuhtempo)),
                       const SizedBox(height: 16),
                       Divider(color: colorsApp.border),
                       const SizedBox(height: 8),
@@ -488,7 +524,7 @@ class _PembayaranPageState extends State<PembayaranPage> {
                             ),
                           ),
                           Text(
-                            'Rp ${_formatCurrency(tagihan['jumlah'])}',
+                            'Rp ${NumberFormat.decimalPattern('id').format(tagihan['jumlah'])}',
                             style: GoogleFonts.poppins(
                               fontSize: 20,
                               fontWeight: FontWeight.w700,
@@ -554,7 +590,13 @@ class _PembayaranPageState extends State<PembayaranPage> {
     );
   }
 
-  void _showDetailTagihan(BuildContext context, Map<String, dynamic> tagihan) {
+  void _showDetailTagihan(BuildContext context, tagihan) {
+    final Jatuhtempo = DateTime.parse(tagihan['tanggal_masuk']);
+    final String? bulan = tagihan['bulan'];
+    final String? tahun = tagihan['tahun'];
+
+    DateTime? datePeriode;
+    datePeriode = DateTime(int.parse(tahun!), int.parse(bulan!));
     showDialog(
       context: context,
       builder: (context) {
@@ -587,9 +629,11 @@ class _PembayaranPageState extends State<PembayaranPage> {
                 ),
                 const SizedBox(height: 16),
                 _buildDetailRow('Nama', tagihan['nama']),
-                _buildDetailRow('Kamar', tagihan['kamar']),
-                _buildDetailRow('Periode', tagihan['periode']),
-                _buildDetailRow('Jatuh Tempo', tagihan['jatuh_tempo']),
+                _buildDetailRow('Kamar', tagihan['nomor_kamar']),
+                _buildDetailRow(
+                    'Periode', DateFormat('MMMM yyyy').format(datePeriode!)),
+                _buildDetailRow('Jatuh Tempo',
+                    DateFormat('dd MMM yyyy').format(Jatuhtempo)),
                 const SizedBox(height: 16),
                 Container(
                   padding: const EdgeInsets.all(12),
@@ -608,7 +652,7 @@ class _PembayaranPageState extends State<PembayaranPage> {
                         ),
                       ),
                       Text(
-                        'Rp ${_formatCurrency(tagihan['jumlah'])}',
+                        'Rp ${NumberFormat.decimalPattern('id').format(tagihan['jumlah'])}',
                         style: GoogleFonts.poppins(
                           fontSize: 18,
                           fontWeight: FontWeight.w700,
@@ -716,6 +760,3 @@ class _PembayaranPageState extends State<PembayaranPage> {
     );
   }
 }
-
-// Halaman Riwayat Pembayaran (Terpisah)
-

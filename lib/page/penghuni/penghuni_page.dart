@@ -9,6 +9,7 @@ import 'package:may_kos/page/empty_page/empty_page.dart';
 import 'package:may_kos/page/penghuni/info_penghuni.dart';
 import 'package:may_kos/page/penghuni/penghuni_Form.dart';
 import 'package:may_kos/utils/date_picker.dart';
+import 'package:may_kos/utils/getInitials.dart';
 import 'package:may_kos/widgets/Widget_DeleteDialog.dart';
 import 'package:may_kos/widgets/widgetApbarConten.dart';
 import 'package:may_kos/widgets/widget_Search.dart';
@@ -365,7 +366,7 @@ class _PenghuniPageState extends State<PenghuniPage> {
               ),
               child: Center(
                 child: Text(
-                  getInitials(penghuni!.namaPenghuni),
+                  StringUtils.getInitials(penghuni!.namaPenghuni),
                   style: GoogleFonts.poppins(
                     fontSize: 28,
                     fontWeight: FontWeight.w700,
@@ -669,14 +670,5 @@ class _PenghuniPageState extends State<PenghuniPage> {
         );
       },
     );
-  }
-
-  String getInitials(String name) {
-    if (name.isEmpty) return '?';
-    final names = name.split(' ');
-    if (names.length >= 2) {
-      return '${names[0][0]}${names[1][0]}'.toUpperCase();
-    }
-    return name[0].toUpperCase();
   }
 }
