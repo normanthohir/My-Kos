@@ -31,10 +31,11 @@ class _KamarFormState extends State<KamarForm> {
   // List tipe kamar yang tersedia
   final List<String> roomTypes = ['Standard', 'Deluxe', 'Suite'];
   final _formKey = GlobalKey<FormState>();
+  bool _isLoading = false;
 
-  void _simpanKamar() async {
+  Future _simpanKamar() async {
     if (!_formKey.currentState!.validate()) return;
-
+    setState(() => _isLoading = true);
     try {
       final db = DatabaseHelper();
       final String nomorKamarInput = _roomNumberController.text.trim();
@@ -88,6 +89,7 @@ class _KamarFormState extends State<KamarForm> {
         ),
       );
     }
+    setState(() => _isLoading = false);
   }
 
   // Hapus kamar
@@ -422,14 +424,16 @@ class _KamarFormState extends State<KamarForm> {
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                               ),
-                              child: const Text(
-                                'Simpan',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
+                              child: _isLoading
+                                  ? CircularProgressIndicator()
+                                  : Text(
+                                      'Simpan',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
                             ),
                           ),
                         ],
