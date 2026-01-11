@@ -20,15 +20,8 @@ class _PembayaranPageState extends State<PembayaranPage> {
   List<Map<String, dynamic>> _tagihanList = [];
   bool _isLoading = true;
 
-  @override
-  void initState() {
-    super.initState();
-    _refreshTagihan();
-  }
-
   void _refreshTagihan() async {
     setState(() => _isLoading = true);
-
     // Sekarang memanggil semua tunggakan tanpa terbatas 1 bulan saja
     final data = await DatabaseHelper().getAllTunggakan();
 
@@ -38,25 +31,16 @@ class _PembayaranPageState extends State<PembayaranPage> {
     });
   }
 
-  String _formatPeriode(dynamic bulan, dynamic tahun) {
-    if (bulan == null || tahun == null) return "Bulan/Tahun Null";
-
-    try {
-      int monthInt = int.parse(bulan.toString());
-      int yearInt = int.parse(tahun.toString());
-      DateTime date = DateTime(yearInt, monthInt);
-
-      // Pastikan sudah import 'package:intl/intl.dart';
-      return DateFormat('MMMM yyyy', 'id').format(date);
-    } catch (e) {
-      return "Format Salah";
-    }
-  }
-
   double get _totalTagihan {
     return _tagihanList.fold(0, (sum, item) {
       return sum + (item['jumlah'] ?? 0).toDouble();
     });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _refreshTagihan();
   }
 
   @override
@@ -308,8 +292,7 @@ class _PembayaranPageState extends State<PembayaranPage> {
                       ],
                     ),
                     Text(
-                      'Room ${tagihan['nomor_kamar']} • Period ${datePeriode != null ? DateFormat('MMMM yyyy').format(datePeriode) // Tanpa 'id', otomatis Inggris
-                          : '-'}',
+                      'Room ${tagihan['nomor_kamar']} • Period ${datePeriode != null ? DateFormat('MMMM yyyy').format(datePeriode) : '-'}',
                       style: GoogleFonts.poppins(
                         fontSize: 13,
                         color: colorsApp.textTertiary,

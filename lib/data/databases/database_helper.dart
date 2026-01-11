@@ -275,6 +275,21 @@ class DatabaseHelper {
     }
   }
 
+  Future<List<Map<String, dynamic>>> getPenghuniAktif() async {
+    final db = await database;
+    return await db.rawQuery('''
+    SELECT 
+      p.id, 
+      p.nama_penghuni, 
+      k.nomor_kamar, 
+      k.type_kamar, 
+      k.harga_kamar 
+    FROM penghuni p
+    JOIN kamar k ON p.kamar_id = k.id
+    WHERE p.status_penghuni = 1
+  ''');
+  }
+
 // Crud Pembayaran
   // tambah pembayaran
   Future<void> insertPembayaran(Pembayaran pembayaran) async {

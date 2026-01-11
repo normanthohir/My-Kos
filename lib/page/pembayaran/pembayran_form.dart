@@ -4,10 +4,14 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:intl/intl.dart';
 import 'package:may_kos/config/theme.dart';
+import 'package:may_kos/data/databases/database_helper.dart';
+import 'package:may_kos/data/models/pembayaran.dart';
 import 'package:may_kos/data/models/penghuni.dart';
 import 'package:may_kos/utils/date_picker.dart';
 import 'package:may_kos/widgets/widget_CurrencyInputFormatter.dart';
 import 'package:may_kos/widgets/widget_textFormField.dart';
+import 'package:top_snackbar_flutter/custom_snack_bar.dart';
+import 'package:top_snackbar_flutter/top_snack_bar.dart';
 
 class PembayranForm extends StatefulWidget {
   const PembayranForm({super.key});
@@ -25,12 +29,61 @@ class _PembayranFormState extends State<PembayranForm> {
   DateTime? _selectedDate;
   DateTime? _selectedPeriode;
   int? _selectedPenghuniId;
-
-  List<Penghuni> _penghuniList = [];
+  int? _selectedKamarId;
+  final _formKey = GlobalKey<FormState>();
 
   @override
   void initState() {
     super.initState();
+  }
+
+  void _simpanPembayaran() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    String cleanAmount =
+        _jumlahcontroller.text.replaceAll(RegExp(r'[^0-9]'), '');
+
+    String fullText = _penghuniController.text;
+    String namaOnly = fullText.split(' (')[0];
+    String roomOnly = fullText.contains('Kamar ')
+        ? fullText.split('Kamar ')[1].replaceAll(')', '')
+        : '';
+    Pembayaran dataBaru = Pembayaran(
+      namaPenghuniPembayaran: namaOnly,
+      nomorKamarPembayar: roomOnly,
+      jumlahPembayaran: double.parse(cleanAmount),
+      metodeBayar: _selectedTypepembayaran ?? 'Tunai',
+      periodePembayaran: _selectedPeriode != null
+          ? _selectedPeriode!.toIso8601String()
+          : DateTime.now().toIso8601String(),
+      tanggalPembayaran: _selectedDate != null
+          ? _selectedDate!.toIso8601String()
+          : DateTime.now().toIso8601String(),
+      statusPembayaran: 'Lunas',
+      kamarId: _selectedKamarId,
+      penghuniId: _selectedPenghuniId,
+    );
+
+    try {
+      await DatabaseHelper().insertPembayaran(dataBaru);
+      if (mounted) {
+        Navigator.pop(context, true);
+        showTopSnackBar(
+          Overlay.of(context),
+          CustomSnackBar.success(
+            message: "Pembayaran Berhasil!",
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint("Error simpan: $e");
+      showTopSnackBar(
+        Overlay.of(context),
+        CustomSnackBar.error(
+          message: "Pembayaran Gagal!",
+        ),
+      );
+    }
   }
 
   @override
@@ -60,194 +113,197 @@ class _PembayranFormState extends State<PembayranForm> {
           ],
         ),
         child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      colorsApp.primary,
-                      colorsApp.primary.withOpacity(0.8),
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(24),
-                    topRight: Radius.circular(24),
-                  ),
-                ),
-                child: Column(
-                  children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Input pembayaran',
-                          style: GoogleFonts.poppins(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
-                          ),
-                        ),
-
-                        // Tombol Close
-                        IconButton(
-                          icon: const Icon(
-                            Iconsax.close_circle,
-                            color: Colors.white,
-                            size: 24,
-                          ),
-                          onPressed: () => Navigator.pop(context),
-                        ),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        colorsApp.primary,
+                        colorsApp.primary.withOpacity(0.8),
                       ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
                     ),
-                  ],
-                ),
-              ),
-
-              // body
-              Padding(
-                padding: const EdgeInsets.all(20),
-                child: Form(
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(24),
+                      topRight: Radius.circular(24),
+                    ),
+                  ),
                   child: Column(
                     children: [
-                      // pilih penghuni yang akan dibayar
-                      SizedBox(height: 10),
-                      SharedTextFormField(
-                        Controller: _penghuniController,
-                        labelText: 'Pilih Penghuni',
-                        readOnly: true, // Wajib true agar tidak bisa diketik
-                        prefixIcon: const Icon(Iconsax.personalcard),
-                        suffixIcon:
-                            const Icon(Icons.arrow_drop_down_circle_outlined),
-                        onTap: () {
-                          // modal pilih penghuni
-                          _showPenghuniPicker();
-                        },
-                      ),
-                      SizedBox(height: 20),
-                      // Jumlah pembayaran
-                      SharedTextFormField(
-                        Controller: _jumlahcontroller,
-                        labelText: 'Jumlah Pembayaran',
-                        keyboardType: TextInputType.number,
-                        prefixIcon: Icon(Iconsax.dollar_circle),
-                        inputFormatters: [
-                          FilteringTextInputFormatter.digitsOnly,
-                          CurrencyInputFormatter(),
-                        ],
-                      ),
-                      SizedBox(height: 20),
-                      // priode pembayaran
-                      SharedTextFormField(
-                        Controller: _priodeController,
-                        readOnly: true,
-                        onTap: () {
-                          DatePickerUtil.selectMonthYear(
-                            context: context,
-                            initialDate: _selectedPeriode,
-                            controller: _priodeController,
-                            onDateSelected: (date) {
-                              setState(() {
-                                _selectedPeriode = date;
-                              });
-                            },
-                          );
-                        },
-                        labelText: 'Priode',
-                        prefixIcon: Icon(Iconsax.calendar),
-                      ),
-                      SizedBox(height: 20),
-                      // metod pembayaran
-                      DropdownButtonFormField(
-                        value: _selectedTypepembayaran,
-                        decoration: InputDecoration(
-                          labelText: 'Metod Pembayaran',
-                          prefixIcon: const Icon(Iconsax.wallet_2),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Input pembayaran',
+                            style: GoogleFonts.poppins(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),
                           ),
-                        ),
-                        items: const [
-                          DropdownMenuItem(
-                            value: 'tunai',
-                            child: Text('Tunai'),
-                          ),
-                          DropdownMenuItem(
-                            value: 'transfer',
-                            child: Text('Transfer'),
-                          ),
-                        ],
-                        onChanged: (Value) {
-                          setState(() {
-                            _selectedTypepembayaran = Value;
-                          });
-                        },
-                      ),
-                      SizedBox(height: 20),
-                      // Tanggal pembayaran
-                      SharedTextFormField(
-                        Controller: _dateController,
-                        readOnly: true,
-                        onTap: () {
-                          DatePickerUtil.selectDate(
-                            context: context,
-                            initialDate: _selectedDate,
-                            controller: _dateController,
-                            onDateSelected: (date) {
-                              setState(() {
-                                _selectedDate = date;
-                              });
-                            },
-                          );
-                        },
-                        labelText: 'Tanggal Pembayaran',
-                        keyboardType: TextInputType.datetime,
-                        prefixIcon: Icon(Iconsax.calendar_1),
-                      ),
 
-                      // Tombol Simpan
-                      Padding(
-                        padding: const EdgeInsets.only(top: 20, bottom: 5),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: colorsApp.active,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
+                          // Tombol Close
+                          IconButton(
+                            icon: const Icon(
+                              Iconsax.close_circle,
+                              color: Colors.white,
+                              size: 24,
+                            ),
+                            onPressed: () => Navigator.pop(context),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+
+                // body
+                Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Form(
+                    child: Column(
+                      children: [
+                        // pilih penghuni yang akan dibayar
+                        SizedBox(height: 10),
+                        SharedTextFormField(
+                          Controller: _penghuniController,
+                          labelText: 'Pilih Penghuni',
+                          readOnly: true,
+                          prefixIcon: const Icon(Iconsax.personalcard),
+                          suffixIcon:
+                              const Icon(Icons.arrow_drop_down_circle_outlined),
+                          onTap: () {
+                            // modal pilih penghuni
+                            _showPenghuniPicker();
+                          },
+                        ),
+                        SizedBox(height: 20),
+                        // Jumlah pembayaran
+                        SharedTextFormField(
+                          Controller: _jumlahcontroller,
+                          labelText: 'Jumlah Pembayaran',
+                          keyboardType: TextInputType.number,
+                          prefixIcon: Icon(Iconsax.dollar_circle),
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                            CurrencyInputFormatter(),
+                          ],
+                        ),
+                        SizedBox(height: 20),
+                        // priode pembayaran
+                        SharedTextFormField(
+                          Controller: _priodeController,
+                          readOnly: true,
+                          onTap: () {
+                            DatePickerUtil.selectMonthYear(
+                              context: context,
+                              initialDate: _selectedPeriode,
+                              controller: _priodeController,
+                              onDateSelected: (date) {
+                                setState(() {
+                                  _selectedPeriode = date;
+                                });
+                              },
+                            );
+                          },
+                          labelText: 'Priode',
+                          prefixIcon: Icon(Iconsax.calendar),
+                        ),
+                        SizedBox(height: 20),
+                        // metod pembayaran
+                        DropdownButtonFormField(
+                          value: _selectedTypepembayaran,
+                          decoration: InputDecoration(
+                            labelText: 'Metod Pembayaran',
+                            prefixIcon: const Icon(Iconsax.wallet_2),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          items: const [
+                            DropdownMenuItem(
+                              value: 'tunai',
+                              child: Text('Tunai'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'transfer',
+                              child: Text('Transfer'),
+                            ),
+                          ],
+                          onChanged: (Value) {
+                            setState(() {
+                              _selectedTypepembayaran = Value;
+                            });
+                          },
+                        ),
+                        SizedBox(height: 20),
+                        // Tanggal pembayaran
+                        SharedTextFormField(
+                          Controller: _dateController,
+                          readOnly: true,
+                          onTap: () {
+                            DatePickerUtil.selectDate(
+                              context: context,
+                              initialDate: _selectedDate,
+                              controller: _dateController,
+                              onDateSelected: (date) {
+                                setState(() {
+                                  _selectedDate = date;
+                                });
+                              },
+                            );
+                          },
+                          labelText: 'Tanggal Pembayaran',
+                          keyboardType: TextInputType.datetime,
+                          prefixIcon: Icon(Iconsax.calendar_1),
+                        ),
+
+                        // Tombol Simpan
+                        Padding(
+                          padding: const EdgeInsets.only(top: 20, bottom: 5),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: colorsApp.active,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
                                   ),
-                                ),
-                                onPressed: () {},
-                                child: Padding(
-                                  padding: const EdgeInsets.all(10.0),
-                                  child: Text(
-                                    'Simpan',
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.white,
+                                  onPressed: _simpanPembayaran,
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(10.0),
+                                    child: Text(
+                                      'Simpan',
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.white,
+                                      ),
                                     ),
                                   ),
                                 ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -268,7 +324,7 @@ class _PembayranFormState extends State<PembayranForm> {
           ),
           child: Column(
             children: [
-              // Handle bar kecil di atas
+              // Handle bar
               Container(
                 margin: const EdgeInsets.symmetric(vertical: 10),
                 height: 5,
@@ -283,53 +339,65 @@ class _PembayranFormState extends State<PembayranForm> {
                     style: GoogleFonts.poppins(
                         fontSize: 18, fontWeight: FontWeight.bold)),
               ),
-
-              // List Penghuni
-
               Expanded(
-                child: ListView.separated(
-                  padding: EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: _penghuniList.length,
-                  separatorBuilder: (context, index) => Divider(height: 1),
-                  itemBuilder: (context, index) {
-                    final penghuni = _penghuniList[index];
-                    return ListTile(
-                      contentPadding:
-                          EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                      leading: CircleAvatar(
-                        backgroundColor: colorsApp.primary.withOpacity(0.1),
-                        child: Text(penghuni.nomorKamar.toString(),
-                            style: TextStyle(
-                                color: colorsApp.primary,
-                                fontWeight: FontWeight.bold)),
-                      ),
-                      title: Text(penghuni.namaPenghuni,
-                          style:
-                              GoogleFonts.poppins(fontWeight: FontWeight.w600)),
-                      subtitle: Text(
-                        "Tipe: ${(penghuni.typeKamar)}",
-                        style: GoogleFonts.poppins(),
-                      ),
-                      trailing: Text(
-                        NumberFormat.decimalPattern('id')
-                            .format(penghuni.hargaKamar),
-                        style: GoogleFonts.poppins(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13,
-                          color: Colors.green,
-                        ),
-                      ),
-                      onTap: () {
-                        setState(() {
-                          _selectedPenghuniId = penghuni.id;
-                          // Ini yang Anda minta: Otomatis isi harga
-                          _jumlahcontroller.text =
-                              penghuni.hargaKamar.toString();
-                          // Jika Anda punya controller nama penghuni untuk ditampilkan di UI
-                          _penghuniController.text =
-                              "${penghuni.namaPenghuni} (${penghuni.nomorKamar})";
-                        });
-                        Navigator.pop(context);
+                child: FutureBuilder<List<Map<String, dynamic>>>(
+                  future: DatabaseHelper()
+                      .getPenghuniAktif(), // Ambil data langsung
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                      return const Center(
+                          child: Text("Tidak ada penghuni aktif"));
+                    }
+
+                    final dataPenghuni = snapshot.data!;
+
+                    return ListView.separated(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      itemCount: dataPenghuni.length,
+                      separatorBuilder: (context, index) =>
+                          const Divider(height: 1),
+                      itemBuilder: (context, index) {
+                        final p = dataPenghuni[index];
+                        return ListTile(
+                          leading: CircleAvatar(
+                            backgroundColor: colorsApp.primary.withOpacity(0.1),
+                            child: Text(p['nomor_kamar'].toString(),
+                                style: TextStyle(
+                                    color: colorsApp.primary,
+                                    fontWeight: FontWeight.bold)),
+                          ),
+                          title: Text(p['nama_penghuni'],
+                              style: GoogleFonts.poppins(
+                                  fontWeight: FontWeight.w600)),
+                          subtitle: Text("Tipe: ${p['type_kamar']}"),
+                          trailing: Text(
+                            NumberFormat.currency(
+                                    locale: 'id',
+                                    symbol: 'Rp ',
+                                    decimalDigits: 0)
+                                .format(p['harga_kamar']),
+                            style: GoogleFonts.poppins(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                              color: Colors.green,
+                            ),
+                          ),
+                          onTap: () {
+                            setState(() {
+                              _selectedPenghuniId = p['id'];
+                              _selectedKamarId = p[
+                                  'kamar_id']; // Jika Anda perlu simpan ID Kamar juga
+                              _jumlahcontroller.text =
+                                  p['harga_kamar'].toInt().toString();
+                              _penghuniController.text =
+                                  "${p['nama_penghuni']} (Kamar ${p['nomor_kamar']})";
+                            });
+                            Navigator.pop(context);
+                          },
+                        );
                       },
                     );
                   },

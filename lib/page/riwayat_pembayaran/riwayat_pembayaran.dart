@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import 'package:may_kos/config/theme.dart';
+import 'package:may_kos/data/databases/database_helper.dart';
+import 'package:may_kos/data/models/pembayaran.dart';
 import 'package:may_kos/page/empty_page/empty_page.dart';
+import 'package:may_kos/utils/getInitials.dart';
 
 class RiwayatPembayaranPage extends StatefulWidget {
   const RiwayatPembayaranPage({super.key});
@@ -13,84 +17,61 @@ class RiwayatPembayaranPage extends StatefulWidget {
 
 class _RiwayatPembayaranPageState extends State<RiwayatPembayaranPage> {
   String _selectedFilter = 'semua'; // semua, bulan-ini, tahun-ini
-  final List<Map<String, dynamic>> _riwayatList = [];
+  List<Pembayaran> _riwayatList = [];
 
   @override
-  void initState() {
-    super.initState();
-    _loadDummyData();
+  void _loadData() async {
+    final data = await DatabaseHelper().getAllPembayaran();
+    setState(() {
+      _riwayatList = data;
+    });
   }
 
-  void _loadDummyData() {
-    // Data dummy riwayat pembayaran
-    _riwayatList.addAll([
-      {
-        'id': 1,
-        'nama': 'Siti Milaa',
-        'kamar': '012',
-        'periode': 'April 2024',
-        'tanggal_bayar': '5 April 2024',
-        'waktu': '14:30',
-        'jumlah': 1200000,
-        'metode': 'Transfer Bank',
-        'status': 'lunas',
-        'bukti': 'Tersedia',
-      },
-      {
-        'id': 2,
-        'nama': 'Ahmad Fauzi',
-        'kamar': '022',
-        'periode': 'April 2024',
-        'tanggal_bayar': '7 April 2024',
-        'waktu': '10:15',
-        'jumlah': 1100000,
-        'metode': 'Tunai',
-        'status': 'lunas',
-        'bukti': 'Tidak Tersedia',
-      },
-      {
-        'id': 3,
-        'nama': 'Reza Maulana',
-        'kamar': '011',
-        'periode': 'April 2024',
-        'tanggal_bayar': '9 April 2024',
-        'waktu': '16:45',
-        'jumlah': 1200000,
-        'metode': 'Transfer Bank',
-        'status': 'lunas',
-        'bukti': 'Tersedia',
-      },
-      {
-        'id': 4,
-        'nama': 'Swisto Bagus',
-        'kamar': '002',
-        'periode': 'Maret 2024',
-        'tanggal_bayar': '5 Desember 2025',
-        'waktu': '11:20',
-        'jumlah': 1100000,
-        'metode': 'Transfer Bank',
-        'status': 'lunas',
-        'bukti': 'Tersedia',
-      },
-      {
-        'id': 5,
-        'nama': 'Siti Milaa',
-        'kamar': '012',
-        'periode': 'Maret 2024',
-        'tanggal_bayar': '7 Maret 2024',
-        'waktu': '09:30',
-        'jumlah': 1200000,
-        'metode': 'Tunai',
-        'status': 'lunas',
-        'bukti': 'Tersedia',
-      },
-    ]);
+  List<Pembayaran> get _filterRiwayat {
+    if (_selectedFilter == 'semua') return _filterRiwayat;
+
+    final now = DateTime.now();
+    return _filterRiwayat.where((item) {
+      final dateParts = item.tanggalPembayaran.split(' ');
+      final monthName = dateParts[1];
+      final year = dateParts[2];
+
+      final months = {
+        'Januari': 1,
+        'Februari': 2,
+        'Maret': 3,
+        'April': 4,
+        'Mei': 5,
+        'Juni': 6,
+        'Juli': 7,
+        'Agustus': 8,
+        'September': 9,
+        'Oktober': 10,
+        'November': 11,
+        'Desember': 12
+      };
+
+      final month = months[monthName];
+      final itemYear = int.tryParse(year) ?? 0;
+
+      if (_selectedFilter == 'bulan-ini') {
+        return month == now.month && itemYear == now.year;
+      } else if (_selectedFilter == 'tahun-ini') {
+        return itemYear == now.year;
+      }
+      return true;
+    }).toList();
+  }
+
+  void initState() {
+    super.initState();
+    _loadData();
   }
 
   @override
   Widget build(BuildContext context) {
-    final filteredList = _filterRiwayat(_riwayatList);
-    final totalPembayaran = _calculateTotal(filteredList);
+    // final filteredList = _filterRiwayat(_riwayatList);
+    // final totalPembayaran = _calculateTotal(filteredList);
 
     return Scaffold(
       backgroundColor: colorsApp.background,
@@ -171,7 +152,8 @@ class _RiwayatPembayaranPageState extends State<RiwayatPembayaranPage> {
                             ),
                           ),
                           Text(
-                            'Rp ${_formatCurrency(totalPembayaran)}',
+                            'Rp. 090920193',
+                            // 'Rp ${_formatCurrency(totalPembayaran)}',
                             style: GoogleFonts.poppins(
                               fontSize: 22,
                               fontWeight: FontWeight.w700,
@@ -199,7 +181,7 @@ class _RiwayatPembayaranPageState extends State<RiwayatPembayaranPage> {
                             ),
                             const SizedBox(width: 6),
                             Text(
-                              '${filteredList.length} Transaksi',
+                              '4 Transaksi',
                               style: GoogleFonts.poppins(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,
@@ -313,18 +295,18 @@ class _RiwayatPembayaranPageState extends State<RiwayatPembayaranPage> {
 
           // List Riwayat
           Expanded(
-            child: filteredList.isEmpty
+            child: _riwayatList.isEmpty
                 ? EmptyPage()
-                : ListView.separated(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    itemCount: filteredList.length,
-                    separatorBuilder: (context, index) =>
-                        const SizedBox(height: 12),
-                    itemBuilder: (context, index) {
-                      final riwayat = filteredList[index];
-                      return _buildRiwayatCard(riwayat);
-                    },
-                  ),
+                : _filterRiwayat.isEmpty
+                    ? Center(child: Text('riwayat pembayaran tidak di temukan'))
+                    : ListView.builder(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        itemCount: _riwayatList.length,
+                        itemBuilder: (context, index) {
+                          final penghuni = _riwayatList[index];
+                          return _buildRiwayatCard(penghuni);
+                        },
+                      ),
           ),
         ],
       ),
@@ -367,7 +349,7 @@ class _RiwayatPembayaranPageState extends State<RiwayatPembayaranPage> {
     );
   }
 
-  Widget _buildRiwayatCard(Map<String, dynamic> riwayat) {
+  Widget _buildRiwayatCard(Pembayaran? riwayat) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -411,7 +393,7 @@ class _RiwayatPembayaranPageState extends State<RiwayatPembayaranPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        riwayat['nama'],
+                        riwayat!.namaPenghuniPembayaran,
                         style: GoogleFonts.poppins(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -419,7 +401,7 @@ class _RiwayatPembayaranPageState extends State<RiwayatPembayaranPage> {
                         ),
                       ),
                       Text(
-                        'Kamar ${riwayat['kamar']}',
+                        'Kamar ${riwayat.nomorKamarPembayar}',
                         style: GoogleFonts.poppins(
                           fontSize: 13,
                           color: colorsApp.textTertiary,
@@ -445,9 +427,9 @@ class _RiwayatPembayaranPageState extends State<RiwayatPembayaranPage> {
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      'LUNAS',
+                      riwayat.statusPembayaran,
                       style: GoogleFonts.poppins(
-                        fontSize: 10,
+                        fontSize: 11,
                         fontWeight: FontWeight.w600,
                         color: colorsApp.success,
                       ),
@@ -472,25 +454,27 @@ class _RiwayatPembayaranPageState extends State<RiwayatPembayaranPage> {
                 _buildInfoRow(
                   icon: Iconsax.calendar_1,
                   label: 'Periode',
-                  value: riwayat['periode'],
+                  value: DateFormat('MMMM yyyy')
+                      .format(DateTime.parse(riwayat.periodePembayaran)),
                 ),
                 const SizedBox(height: 8),
                 _buildInfoRow(
                   icon: Iconsax.calendar_tick,
                   label: 'Tanggal Bayar',
-                  value: riwayat['tanggal_bayar'],
+                  value: DateFormat('dd MMMM yyyy')
+                      .format(DateTime.parse(riwayat.tanggalPembayaran)),
                 ),
                 const SizedBox(height: 8),
                 _buildInfoRow(
                   icon: Iconsax.clock,
                   label: 'Waktu',
-                  value: riwayat['waktu'],
+                  value: '-',
                 ),
                 const SizedBox(height: 8),
                 _buildInfoRow(
                   icon: Iconsax.wallet,
                   label: 'Metode',
-                  value: riwayat['metode'],
+                  value: riwayat.metodeBayar,
                 ),
                 const SizedBox(height: 12),
                 Divider(color: colorsApp.border),
@@ -507,7 +491,8 @@ class _RiwayatPembayaranPageState extends State<RiwayatPembayaranPage> {
                       ),
                     ),
                     Text(
-                      'Rp ${_formatCurrency(riwayat['jumlah'])}',
+                      NumberFormat.decimalPattern('id')
+                          .format(riwayat.jumlahPembayaran),
                       style: GoogleFonts.poppins(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
@@ -630,63 +615,43 @@ class _RiwayatPembayaranPageState extends State<RiwayatPembayaranPage> {
     );
   }
 
-  List<Map<String, dynamic>> _filterRiwayat(List<Map<String, dynamic>> list) {
-    if (_selectedFilter == 'semua') return list;
+  // List<Map<String, dynamic>> _filterRiwayat() {
+  //   if (_selectedFilter == 'semua') return list;
 
-    final now = DateTime.now();
-    return list.where((item) {
-      final dateParts = item['tanggal_bayar'].split(' ');
-      final monthName = dateParts[1];
-      final year = dateParts[2];
+  //   final now = DateTime.now();
+  //   return list.where((item) {
+  //     final dateParts = item['tanggal_bayar'].split(' ');
+  //     final monthName = dateParts[1];
+  //     final year = dateParts[2];
 
-      final months = {
-        'Januari': 1,
-        'Februari': 2,
-        'Maret': 3,
-        'April': 4,
-        'Mei': 5,
-        'Juni': 6,
-        'Juli': 7,
-        'Agustus': 8,
-        'September': 9,
-        'Oktober': 10,
-        'November': 11,
-        'Desember': 12
-      };
+  //     final months = {
+  //       'Januari': 1,
+  //       'Februari': 2,
+  //       'Maret': 3,
+  //       'April': 4,
+  //       'Mei': 5,
+  //       'Juni': 6,
+  //       'Juli': 7,
+  //       'Agustus': 8,
+  //       'September': 9,
+  //       'Oktober': 10,
+  //       'November': 11,
+  //       'Desember': 12
+  //     };
 
-      final month = months[monthName];
-      final itemYear = int.tryParse(year) ?? 0;
+  //     final month = months[monthName];
+  //     final itemYear = int.tryParse(year) ?? 0;
 
-      if (_selectedFilter == 'bulan-ini') {
-        return month == now.month && itemYear == now.year;
-      } else if (_selectedFilter == 'tahun-ini') {
-        return itemYear == now.year;
-      }
-      return true;
-    }).toList();
-  }
+  //     if (_selectedFilter == 'bulan-ini') {
+  //       return month == now.month && itemYear == now.year;
+  //     } else if (_selectedFilter == 'tahun-ini') {
+  //       return itemYear == now.year;
+  //     }
+  //     return true;
+  //   }).toList();
+  // }
 
-  int _calculateTotal(List<Map<String, dynamic>> list) {
-    return list.fold(0, (sum, item) => sum + (item['jumlah'] as int));
-  }
-
-  String _formatCurrency(int amount) {
-    return amount.toString().replaceAllMapped(
-          RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-          (Match m) => '${m[1]}.',
-        );
-  }
-
-  String getInitials(String name) {
-    if (name.isEmpty) return '?';
-    final names = name.split(' ');
-    if (names.length >= 2) {
-      return '${names[0][0]}${names[1][0]}'.toUpperCase();
-    }
-    return name[0].toUpperCase();
-  }
-
-  void _showDetailRiwayat(BuildContext context, Map<String, dynamic> riwayat) {
+  void _showDetailRiwayat(BuildContext context, Pembayaran? riwayat) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -758,7 +723,8 @@ class _RiwayatPembayaranPageState extends State<RiwayatPembayaranPage> {
                           ),
                           child: Center(
                             child: Text(
-                              riwayat['nama'][0],
+                              StringUtils.getInitials(
+                                  riwayat!.namaPenghuniPembayaran),
                               style: GoogleFonts.poppins(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w700,
@@ -773,7 +739,7 @@ class _RiwayatPembayaranPageState extends State<RiwayatPembayaranPage> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                riwayat['nama'],
+                                riwayat.namaPenghuniPembayaran,
                                 style: GoogleFonts.poppins(
                                   fontSize: 18,
                                   fontWeight: FontWeight.w600,
@@ -781,7 +747,7 @@ class _RiwayatPembayaranPageState extends State<RiwayatPembayaranPage> {
                                 ),
                               ),
                               Text(
-                                'Kamar ${riwayat['kamar']}',
+                                'Kamar ${riwayat.nomorKamarPembayar}',
                                 style: GoogleFonts.poppins(
                                   fontSize: 14,
                                   color: colorsApp.textTertiary,
@@ -807,12 +773,17 @@ class _RiwayatPembayaranPageState extends State<RiwayatPembayaranPage> {
                   ),
                   const SizedBox(height: 12),
 
-                  _buildDetailItem('Periode', riwayat['periode']),
-                  _buildDetailItem('Tanggal Bayar', riwayat['tanggal_bayar']),
-                  _buildDetailItem('Waktu', riwayat['waktu']),
-                  _buildDetailItem('Metode Pembayaran', riwayat['metode']),
-                  _buildDetailItem('Status Bukti', riwayat['bukti']),
-
+                  _buildDetailItem(
+                      'Periode',
+                      DateFormat('MMMM yyyy')
+                          .format(DateTime.parse(riwayat.periodePembayaran))),
+                  _buildDetailItem(
+                      'Tanggal Bayar',
+                      DateFormat('dd MMMM yyyy')
+                          .format(DateTime.parse(riwayat.tanggalPembayaran))),
+                  _buildDetailItem('Waktu', '-'),
+                  _buildDetailItem('Metode Pembayaran', riwayat.metodeBayar),
+                  _buildDetailItem('Status Bukti', riwayat.statusPembayaran),
                   const SizedBox(height: 20),
 
                   // Total
@@ -834,7 +805,8 @@ class _RiwayatPembayaranPageState extends State<RiwayatPembayaranPage> {
                           ),
                         ),
                         Text(
-                          'Rp ${_formatCurrency(riwayat['jumlah'])}',
+                          NumberFormat.decimalPattern('id')
+                              .format(riwayat.jumlahPembayaran),
                           style: GoogleFonts.poppins(
                             fontSize: 22,
                             fontWeight: FontWeight.w700,
@@ -902,8 +874,7 @@ class _RiwayatPembayaranPageState extends State<RiwayatPembayaranPage> {
     );
   }
 
-  void _showBuktiPembayaran(
-      BuildContext context, Map<String, dynamic> riwayat) {
+  void _showBuktiPembayaran(BuildContext context, Pembayaran? riwayat) {
     showDialog(
       context: context,
       builder: (context) {
@@ -940,13 +911,13 @@ class _RiwayatPembayaranPageState extends State<RiwayatPembayaranPage> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  riwayat['nama'],
+                  riwayat!.namaPenghuniPembayaran,
                   style: GoogleFonts.poppins(
                     color: colorsApp.textSecondary,
                   ),
                 ),
                 const SizedBox(height: 24),
-                if (riwayat['bukti'] == 'Tersedia') ...[
+                if (riwayat.buktiPembayaran == 'Tersedia') ...[
                   Container(
                     height: 200,
                     width: double.infinity,
@@ -965,7 +936,7 @@ class _RiwayatPembayaranPageState extends State<RiwayatPembayaranPage> {
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          'Bukti_${riwayat['nama']}_${riwayat['periode']}.jpg',
+                          'Bukti_${riwayat.namaPenghuniPembayaran}_${riwayat.periodePembayaran}.jpg',
                           style: GoogleFonts.poppins(
                             fontSize: 14,
                             color: colorsApp.textSecondary,
