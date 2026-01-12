@@ -27,37 +27,27 @@ class _RiwayatPembayaranPageState extends State<RiwayatPembayaranPage> {
     });
   }
 
-  List<Pembayaran> get _filterRiwayat {
-    if (_selectedFilter == 'semua') return _filterRiwayat;
+  // 1. Ubah getter agar mengambil data dari _riwayatList
+  List<Pembayaran> get _filteredRiwayat {
+    // Saya ubah namanya agar lebih jelas
+    if (_selectedFilter == 'semua')
+      return _riwayatList; // Ambil dari list utama
 
     final now = DateTime.now();
-    return _filterRiwayat.where((item) {
-      final dateParts = item.tanggalPembayaran.split(' ');
-      final monthName = dateParts[1];
-      final year = dateParts[2];
 
-      final months = {
-        'Januari': 1,
-        'Februari': 2,
-        'Maret': 3,
-        'April': 4,
-        'Mei': 5,
-        'Juni': 6,
-        'Juli': 7,
-        'Agustus': 8,
-        'September': 9,
-        'Oktober': 10,
-        'November': 11,
-        'Desember': 12
-      };
+    // Ambil dari _riwayatList, bukan memanggil getter ini lagi
+    return _riwayatList.where((item) {
+      try {
+        // Karena di database kita simpan ISO8601, gunakan DateTime.parse
+        final date = DateTime.parse(item.tanggalPembayaran);
 
-      final month = months[monthName];
-      final itemYear = int.tryParse(year) ?? 0;
-
-      if (_selectedFilter == 'bulan-ini') {
-        return month == now.month && itemYear == now.year;
-      } else if (_selectedFilter == 'tahun-ini') {
-        return itemYear == now.year;
+        if (_selectedFilter == 'bulan-ini') {
+          return date.month == now.month && date.year == now.year;
+        } else if (_selectedFilter == 'tahun-ini') {
+          return date.year == now.year;
+        }
+      } catch (e) {
+        return false;
       }
       return true;
     }).toList();
@@ -294,17 +284,20 @@ class _RiwayatPembayaranPageState extends State<RiwayatPembayaranPage> {
           SizedBox(height: 20),
 
           // List Riwayat
+          // Di dalam Widget build, bagian list riwayat:
           Expanded(
             child: _riwayatList.isEmpty
-                ? EmptyPage()
-                : _filterRiwayat.isEmpty
-                    ? Center(child: Text('riwayat pembayaran tidak di temukan'))
+                ? const EmptyPage()
+                : _filteredRiwayat.isEmpty
+                    ? const Center(
+                        child: Text('Riwayat pembayaran tidak ditemukan'))
                     : ListView.builder(
                         padding: const EdgeInsets.symmetric(horizontal: 20),
-                        itemCount: _riwayatList.length,
+                        itemCount: _filteredRiwayat
+                            .length, // Gunakan list yang sudah difilter
                         itemBuilder: (context, index) {
-                          final penghuni = _riwayatList[index];
-                          return _buildRiwayatCard(penghuni);
+                          final riwayat = _filteredRiwayat[index];
+                          return _buildRiwayatCard(riwayat);
                         },
                       ),
           ),
