@@ -292,7 +292,7 @@ class _PembayaranPageState extends State<PembayaranPage> {
                       ],
                     ),
                     Text(
-                      'Room ${tagihan['nomor_kamar']} • Period ${datePeriode != null ? DateFormat('MMMM yyyy').format(datePeriode) : '-'}',
+                      'Room ${tagihan['nomor_kamar']} • Period ${DateFormat('MMMM yyyy').format(datePeriode)}',
                       style: GoogleFonts.poppins(
                         fontSize: 13,
                         color: colorsApp.textTertiary,
