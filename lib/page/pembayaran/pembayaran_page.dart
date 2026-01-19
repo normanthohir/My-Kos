@@ -544,8 +544,10 @@ class _PembayaranPageState extends State<PembayaranPage> {
                     Expanded(
                       child: ElevatedButton(
                         onPressed: () {
-                          Navigator.pop(context);
-                          // Proses pembayaran
+                          Navigator.pop(context); // Tutup modal konfirmasi dulu
+
+                          // Panggil form input dengan membawa data tagihan
+                          ForminputpembayarabDialog(tagihanData: tagihan);
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: colorsApp.success,
@@ -721,7 +723,7 @@ class _PembayaranPageState extends State<PembayaranPage> {
   }
 
   // modal Pembayaran
-  void ForminputpembayarabDialog() {
+  void ForminputpembayarabDialog({Map<String, dynamic>? tagihanData}) {
     showGeneralDialog(
       context: context,
       barrierDismissible: true,
@@ -730,16 +732,27 @@ class _PembayaranPageState extends State<PembayaranPage> {
       transitionDuration: const Duration(milliseconds: 300),
       pageBuilder: (context, animation, secondaryAnimation) {
         return ScaleTransition(
-          scale: CurvedAnimation(
-            parent: animation,
-            curve: Curves.easeOutBack,
-          ),
+          scale: CurvedAnimation(parent: animation, curve: Curves.easeOutBack),
           child: FadeTransition(
             opacity: animation,
-            child: PembayranForm(),
+
+            /// Kirim tagihanData (bisa berisi data atau null)
+            child: PembayranForm(initialData: tagihanData),
           ),
         );
       },
+      // pageBuilder: (context, animation, secondaryAnimation) {
+      //   return ScaleTransition(
+      //     scale: CurvedAnimation(
+      //       parent: animation,
+      //       curve: Curves.easeOutBack,
+      //     ),
+      //     child: FadeTransition(
+      //       opacity: animation,
+      //       child: PembayranForm(),
+      //     ),
+      //   );
+      // },
     );
   }
 }

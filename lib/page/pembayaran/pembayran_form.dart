@@ -14,8 +14,11 @@ import 'package:top_snackbar_flutter/custom_snack_bar.dart';
 import 'package:top_snackbar_flutter/top_snack_bar.dart';
 
 class PembayranForm extends StatefulWidget {
-  const PembayranForm({super.key});
+  // 1. Tambahkan baris ini untuk menampung data
+  final Map<String, dynamic>? initialData;
 
+  // 2. Tambahkan widget.initialData ke constructor
+  const PembayranForm({super.key, this.initialData});
   @override
   State<PembayranForm> createState() => _PembayranFormState();
 }
@@ -35,6 +38,33 @@ class _PembayranFormState extends State<PembayranForm> {
   @override
   void initState() {
     super.initState();
+
+    // Sekarang widget.initialData sudah bisa dikenali karena sudah didefinisikan di atas
+    if (widget.initialData != null) {
+      final data = widget.initialData!;
+
+      // Isi Controller
+      _jumlahcontroller.text = data['jumlah'].toInt().toString();
+      _penghuniController.text =
+          "${data['nama']} (Kamar ${data['nomor_kamar']})";
+
+      // Isi format tanggal hari ini
+      _dateController.text = DateFormat('dd/MM/yyyy').format(DateTime.now());
+      _selectedDate = DateTime.now();
+
+      // Parsing Periode (Bulan & Tahun) dari tagihan
+      if (data['bulan'] != null && data['tahun'] != null) {
+        _selectedPeriode = DateTime(
+            int.tryParse(data['tahun'].toString()) ?? DateTime.now().year,
+            int.tryParse(data['bulan'].toString()) ?? DateTime.now().month);
+        _priodeController.text =
+            DateFormat('MMMM yyyy').format(_selectedPeriode!);
+      }
+
+      // Ambil ID dari data tagihan
+      _selectedPenghuniId = data['penghuni_id'];
+      _selectedKamarId = data['kamar_id'];
+    }
   }
 
   void _simpanPembayaran() async {
@@ -230,6 +260,12 @@ class _PembayranFormState extends State<PembayranForm> {
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Pilih metode pembayaran'; // Pesan error jika kosong
+                            }
+                            return null;
+                          },
                           items: const [
                             DropdownMenuItem(
                               value: 'tunai',
