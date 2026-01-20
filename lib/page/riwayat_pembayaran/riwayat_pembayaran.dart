@@ -53,6 +53,16 @@ class _RiwayatPembayaranPageState extends State<RiwayatPembayaranPage> {
     }).toList();
   }
 
+  // Menghitung total uang dari list yang sudah difilter
+  double get _totalNominal {
+    return _filteredRiwayat.fold(0, (sum, item) => sum + item.jumlahPembayaran);
+  }
+
+// Menghitung jumlah transaksi dari list yang sudah difilter
+  int get _totalTransaksi {
+    return _filteredRiwayat.length;
+  }
+
   void initState() {
     super.initState();
     _loadData();
@@ -142,8 +152,7 @@ class _RiwayatPembayaranPageState extends State<RiwayatPembayaranPage> {
                             ),
                           ),
                           Text(
-                            'Rp. 090920193',
-                            // 'Rp ${_formatCurrency(totalPembayaran)}',
+                            'Rp. ${NumberFormat.decimalPattern('id').format(_totalNominal)}',
                             style: GoogleFonts.poppins(
                               fontSize: 22,
                               fontWeight: FontWeight.w700,
@@ -171,7 +180,7 @@ class _RiwayatPembayaranPageState extends State<RiwayatPembayaranPage> {
                             ),
                             const SizedBox(width: 6),
                             Text(
-                              '4 Transaksi',
+                              '${_totalTransaksi} Transaksi',
                               style: GoogleFonts.poppins(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,
