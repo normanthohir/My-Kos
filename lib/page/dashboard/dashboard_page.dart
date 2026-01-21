@@ -1,15 +1,63 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:intl/intl.dart';
 import 'package:may_kos/config/theme.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:may_kos/data/databases/database_helper.dart';
 import 'package:may_kos/page/kamar/kamar_page.dart';
 import 'package:may_kos/page/laporan/laporan_page.dart';
 import 'package:may_kos/page/pembayaran/pembayaran_page.dart';
 import 'package:may_kos/page/penghuni/penghuni_page.dart';
 import 'package:may_kos/page/riwayat_pembayaran/riwayat_pembayaran.dart';
+import 'package:sqflite/sqflite.dart';
 
-class DashboardPage extends StatelessWidget {
+class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
+
+  @override
+  State<DashboardPage> createState() => _DashboardPageState();
+}
+
+class _DashboardPageState extends State<DashboardPage> {
+  List<Map<String, dynamic>> _belumBayar = [];
+  List<Map<String, dynamic>> _penghuniAktfi = [];
+  List<Map<String, dynamic>> _kamarkosong = [];
+
+  void _refresh() async {
+    // Sekarang memanggil semua tunggakan tanpa terbatas 1 bulan saja
+    final datatagihan = await DatabaseHelper().getAllTunggakan();
+    final dataPenghuni = await DatabaseHelper().getPenghuniAktif();
+    final dataKamar = await DatabaseHelper().getKamarTersedia();
+    setState(() {
+      _belumBayar = datatagihan;
+      _penghuniAktfi = dataPenghuni;
+      _kamarkosong = dataKamar.map((kamar) => kamar.toMap()).toList();
+    });
+  }
+
+  double get _totalBelumBayar {
+    return _belumBayar.fold(0, (sum, item) {
+      return sum + (item['jumlah'] ?? 0).toDouble();
+    });
+  }
+
+  double get _totalpenghuniAktfi {
+    return _penghuniAktfi.fold(0, (sum, item) {
+      return sum + (item['jumlah'] ?? 0).toDouble();
+    });
+  }
+
+  double get _totalKamarTersedia {
+    return _kamarkosong.fold(0, (sum, item) {
+      return sum + (item['jumlah'] ?? 0).toDouble();
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _refresh();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -143,7 +191,8 @@ class DashboardPage extends StatelessWidget {
                     _buildStatCard(
                       icon: Iconsax.profile_2user,
                       title: 'Penghuni Aktif',
-                      value: '12',
+                      value: NumberFormat.decimalPattern('id')
+                          .format(_totalpenghuniAktfi),
                       trend: '+2',
                       color: colorsApp.success,
                       iconBg: colorsApp.success.withOpacity(0.1),
@@ -159,15 +208,17 @@ class DashboardPage extends StatelessWidget {
                     _buildStatCard(
                       icon: Iconsax.warning_2,
                       title: 'Belum Bayar',
-                      value: '2',
-                      trend: '-1',
+                      value: NumberFormat.decimalPattern('id')
+                          .format(_totalBelumBayar),
+                      trend: '0',
                       color: colorsApp.warning,
                       iconBg: colorsApp.warning.withOpacity(0.1),
                     ),
                     _buildStatCard(
                       icon: Iconsax.home,
                       title: 'Kamar Kosong',
-                      value: '5',
+                      value: NumberFormat.decimalPattern('id')
+                          .format(_totalKamarTersedia),
                       trend: '0',
                       color: colorsApp.secondary,
                       iconBg: colorsApp.secondary.withOpacity(0.1),
