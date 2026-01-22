@@ -53,11 +53,11 @@ class _DashboardPageState extends State<DashboardPage> {
     });
   }
 
-  @override
-  void initState() {
-    super.initState();
-    _refresh();
-  }
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   _refresh();
+  // }
 
   @override
   Widget build(BuildContext context) {
