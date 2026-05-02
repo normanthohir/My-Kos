@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:may_kos/data/databases/database_helper.dart';
 import 'package:may_kos/page/kamar/kamar_page.dart';
 import 'package:may_kos/page/laporan/laporan_page.dart';
+import 'package:may_kos/page/maintenance/maintenance.dart';
 import 'package:may_kos/page/pembayaran/pembayaran_page.dart';
 import 'package:may_kos/page/penghuni/penghuni_page.dart';
 import 'package:may_kos/page/riwayat_pembayaran/riwayat_pembayaran.dart';
@@ -284,65 +285,65 @@ class _DashboardPageState extends State<DashboardPage> {
                   }).toList(),
                 ),
 
-                const SizedBox(height: 24),
+                // const SizedBox(height: 24),
 
                 // Quick Actions Section
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: colorsApp.surface,
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: colorsApp.cardShadow,
-                    border: Border.all(
-                      color: colorsApp.border.withOpacity(0.5),
-                    ),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Aksi Cepat',
-                        style: GoogleFonts.poppins(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                          color: colorsApp.textPrimary,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          _buildQuickAction(
-                            icon: Iconsax.add_circle,
-                            label: 'Tambah\nPenghuni',
-                            color: colorsApp.primary,
-                            onTap: () {
-                              // Navigate to add penghuni
-                            },
-                          ),
-                          _buildQuickAction(
-                            icon: Iconsax.receipt_item,
-                            label: 'Input\nPembayaran',
-                            color: colorsApp.success,
-                            onTap: () {},
-                          ),
-                          _buildQuickAction(
-                            icon: Iconsax.notification,
-                            label: 'Pengingat\nTagihan',
-                            color: colorsApp.warning,
-                            onTap: () {},
-                          ),
-                          _buildQuickAction(
-                            icon: Iconsax.document_download,
-                            label: 'Laporan\nBulanan',
-                            color: colorsApp.info,
-                            onTap: () {},
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
+                // Container(
+                //   padding: const EdgeInsets.all(20),
+                //   decoration: BoxDecoration(
+                //     color: colorsApp.surface,
+                //     borderRadius: BorderRadius.circular(20),
+                //     boxShadow: colorsApp.cardShadow,
+                //     border: Border.all(
+                //       color: colorsApp.border.withOpacity(0.5),
+                //     ),
+                //   ),
+                //   child: Column(
+                //     crossAxisAlignment: CrossAxisAlignment.start,
+                //     children: [
+                //       Text(
+                //         'Aksi Cepat',
+                //         style: GoogleFonts.poppins(
+                //           fontSize: 18,
+                //           fontWeight: FontWeight.w600,
+                //           color: colorsApp.textPrimary,
+                //         ),
+                //       ),
+                //       const SizedBox(height: 16),
+                //       Row(
+                //         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                //         children: [
+                //           _buildQuickAction(
+                //             icon: Iconsax.add_circle,
+                //             label: 'Tambah\nPenghuni',
+                //             color: colorsApp.primary,
+                //             onTap: () {
+                //               // Navigate to add penghuni
+                //             },
+                //           ),
+                //           _buildQuickAction(
+                //             icon: Iconsax.receipt_item,
+                //             label: 'Input\nPembayaran',
+                //             color: colorsApp.success,
+                //             onTap: () {},
+                //           ),
+                //           _buildQuickAction(
+                //             icon: Iconsax.notification,
+                //             label: 'Pengingat\nTagihan',
+                //             color: colorsApp.warning,
+                //             onTap: () {},
+                //           ),
+                //           _buildQuickAction(
+                //             icon: Iconsax.document_download,
+                //             label: 'Laporan\nBulanan',
+                //             color: colorsApp.info,
+                //             onTap: () {},
+                //           ),
+                //         ],
+                //       ),
+                //     ],
+                //   ),
+                // ),
               ],
             ),
           ),
@@ -646,8 +647,12 @@ class _DashboardPageState extends State<DashboardPage> {
         'subtitle': 'Analisis keuangan',
         'color': colorsApp.secondary,
         'onTap': () {
+          // Navigator.push(
+          //     context, MaterialPageRoute(builder: (context) => LaporanPage()));
           Navigator.push(
-              context, MaterialPageRoute(builder: (context) => LaporanPage()));
+            context,
+            MaterialPageRoute(builder: (_) => const MaintenancePage()),
+          );
         },
       },
       {
@@ -655,7 +660,12 @@ class _DashboardPageState extends State<DashboardPage> {
         'title': 'Pengaturan',
         'subtitle': 'Atur aplikasi',
         'color': colorsApp.textSecondary,
-        'onTap': () {},
+        'onTap': () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const MaintenancePage()),
+          );
+        },
       },
     ];
   }
