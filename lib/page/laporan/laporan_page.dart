@@ -1,641 +1,606 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:intl/intl.dart';
 import 'package:may_kos/config/theme.dart';
-import 'package:may_kos/page/laporan/model_report.dart';
-import 'package:may_kos/widgets/widgetApbarConten.dart';
-import 'package:may_kos/widgets/widget_appBar.dart';
+import 'package:may_kos/data/databases/database_helper.dart';
+import 'package:may_kos/data/models/kamar.dart';
+import 'package:may_kos/data/models/pembayaran.dart';
+import 'package:may_kos/data/models/penghuni.dart';
 
 class LaporanPage extends StatefulWidget {
-  const LaporanPage({Key? key}) : super(key: key);
+  const LaporanPage({super.key});
 
   @override
   State<LaporanPage> createState() => _LaporanPageState();
 }
 
 class _LaporanPageState extends State<LaporanPage> {
-  String selectedPeriod = 'Bulan Ini';
-  String selectedChartType = 'Penghasilan';
+  bool _isLoading = true;
+  int _totalRooms = 0;
+  int _occupiedRooms = 0;
+  int _availableRooms = 0;
+  int _activeResidents = 0;
+  int _checkoutResidents = 0;
+  int _paidResidents = 0;
+  int _unpaidResidents = 0;
+  double _totalIncome = 0;
+  double _averageOccupancy = 0;
+  List<_MonthlyTrend> _monthlyTrend = [];
+  List<_TopRoom> _topRooms = [];
+  List<_RecentActivity> _recentActivities = [];
 
-  final List<String> periods = [
-    'Hari Ini',
-    'Minggu Ini',
-    'Bulan Ini',
-    'Tahun Ini',
-    'Kustom'
-  ];
-  final List<String> chartTypes = ['Penghasilan', 'Okupansi', 'Penghuni'];
+  @override
+  void initState() {
+    super.initState();
+    _loadReportData();
+  }
 
-  // Data dummy untuk laporan
-  final ReportData reportData = ReportData(
-    period: 'April 2025',
-    totalRooms: 15,
-    occupiedRooms: 10,
-    availableRooms: 5,
-    activeResidents: 12,
-    checkoutResidents: 3,
-    totalIncome: 18750000,
-    averageOccupancy: 75.5,
-    monthlyData: [
-      MonthlyData(month: 'Jan', income: 16500000, occupancy: 65),
-      MonthlyData(month: 'Feb', income: 17500000, occupancy: 70),
-      MonthlyData(month: 'Mar', income: 18200000, occupancy: 73),
-      MonthlyData(month: 'Apr', income: 18750000, occupancy: 75),
-    ],
-    topRooms: [
-      TopRoom(
-          roomNumber: '101',
-          roomType: 'Standard',
-          income: 3250000,
-          occupancyDays: 30),
-      TopRoom(
-          roomNumber: '205',
-          roomType: 'Suite',
-          income: 3000000,
-          occupancyDays: 28),
-      TopRoom(
-          roomNumber: '102',
-          roomType: 'Deluxe',
-          income: 2800000,
-          occupancyDays: 30),
-      TopRoom(
-          roomNumber: '103',
-          roomType: 'Suite',
-          income: 2750000,
-          occupancyDays: 27),
-    ],
-    recentActivities: [
-      RecentActivity(
-        activity: 'Check-in Baru',
-        description: 'Budi Santoso - Kamar 101',
-        time: '2 jam lalu',
-        icon: Icons.person_add,
-        color: Colors.green,
-      ),
-      RecentActivity(
-        activity: 'Pembayaran',
-        description: 'Siti Aminah - Rp 1.500.000',
-        time: '5 jam lalu',
-        icon: Icons.payment,
-        color: Colors.blue,
-      ),
-      RecentActivity(
-        activity: 'Check-out',
-        description: 'Ahmad Fauzi - Kamar 104',
-        time: '1 hari lalu',
-        icon: Icons.logout,
-        color: Colors.orange,
-      ),
-      RecentActivity(
-        activity: 'Maintenance',
-        description: 'Perbaikan AC Kamar 203',
-        time: '2 hari lalu',
-        icon: Icons.build,
-        color: Colors.purple,
-      ),
-    ],
-  );
+  Future<void> _loadReportData() async {
+    try {
+      final helper = DatabaseHelper();
+      final allRooms = await helper.getAllKamar();
+      final occupiedRooms = await helper.getKamarTerisi();
+      final availableRooms = await helper.getKamarTersedia();
+      final allPenghuni = await helper.getAllPenghuni();
+      final paidThisMonth = await helper.getPenghuniSudahBayarBulanIni();
+      final unpaidThisMonth = await helper.getTagihanJatuhTempo();
+      final allPayments = await helper.getAllPembayaran();
+
+      final now = DateTime.now();
+      final currentMonth = now.month.toString().padLeft(2, '0');
+      final currentYear = now.year.toString();
+
+      final currentPayments = allPayments.where((payment) {
+        try {
+          final date = DateTime.parse(payment.periodePembayaran);
+          return date.month.toString().padLeft(2, '0') == currentMonth &&
+              date.year.toString() == currentYear;
+        } catch (_) {
+          return false;
+        }
+      }).toList();
+
+      final totalIncome = currentPayments.fold<double>(0, (sum, item) {
+        return sum + item.jumlahPembayaran;
+      });
+
+      final monthlyTrend = _buildMonthlyTrend(allPayments);
+      final topRooms = _buildTopRooms(allRooms, allPayments);
+      final recentActivities =
+          _buildRecentActivities(currentPayments, unpaidThisMonth);
+
+      if (!mounted) return;
+      setState(() {
+        _totalRooms = allRooms.length;
+        _occupiedRooms = occupiedRooms.length;
+        _availableRooms = availableRooms.length;
+        _activeResidents =
+            allPenghuni.where((item) => item.statusPenghuni).length;
+        _checkoutResidents = allPenghuni.length - _activeResidents;
+        _paidResidents = paidThisMonth.length;
+        _unpaidResidents = unpaidThisMonth.length;
+        _totalIncome = totalIncome;
+        _averageOccupancy =
+            _totalRooms == 0 ? 0 : (_occupiedRooms / _totalRooms) * 100;
+        _monthlyTrend = monthlyTrend;
+        _topRooms = topRooms;
+        _recentActivities = recentActivities;
+        _isLoading = false;
+      });
+    } catch (error, stackTrace) {
+      debugPrint('LaporanPage load error: $error');
+      debugPrint('$stackTrace');
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  List<_MonthlyTrend> _buildMonthlyTrend(List<Pembayaran> payments) {
+    final now = DateTime.now();
+    final List<_MonthlyTrend> trend = [];
+
+    for (int offset = 3; offset >= 0; offset--) {
+      final month = DateTime(now.year, now.month - offset);
+      final monthLabel = DateFormat('MMM', 'id').format(month);
+      final income = payments.fold<double>(0, (sum, payment) {
+        try {
+          final date = DateTime.parse(payment.periodePembayaran);
+          if (date.month == month.month && date.year == month.year) {
+            return sum + payment.jumlahPembayaran;
+          }
+        } catch (_) {}
+        return sum;
+      });
+      final occupancy = _calculateMonthOccupancy(payments, month);
+      trend.add(_MonthlyTrend(monthLabel, income, occupancy));
+    }
+
+    return trend;
+  }
+
+  double _calculateMonthOccupancy(List<Pembayaran> payments, DateTime month) {
+    if (_totalRooms == 0) return 0;
+    final paidThisMonth = payments.where((payment) {
+      try {
+        final date = DateTime.parse(payment.periodePembayaran);
+        return date.month == month.month && date.year == month.year;
+      } catch (_) {
+        return false;
+      }
+    }).length;
+    return (_totalRooms == 0) ? 0 : (paidThisMonth / _totalRooms) * 100;
+  }
+
+  List<_TopRoom> _buildTopRooms(List<Kamar> rooms, List<Pembayaran> payments) {
+    final Map<int, double> incomeByRoom = {};
+    final Map<int, int> paymentCountByRoom = {};
+
+    for (final payment in payments) {
+      final roomId = payment.kamarId;
+      if (roomId == null) continue;
+      incomeByRoom[roomId] =
+          (incomeByRoom[roomId] ?? 0) + payment.jumlahPembayaran;
+      paymentCountByRoom[roomId] = (paymentCountByRoom[roomId] ?? 0) + 1;
+    }
+
+    final topRooms = rooms.map((room) {
+      return _TopRoom(
+        roomNumber: room.nomorKamar,
+        income: incomeByRoom[room.id] ?? 0,
+        payments: paymentCountByRoom[room.id] ?? 0,
+      );
+    }).toList();
+
+    topRooms.sort((a, b) => b.income.compareTo(a.income));
+    return topRooms.take(4).toList();
+  }
+
+  List<_RecentActivity> _buildRecentActivities(
+    List<Pembayaran> currentPayments,
+    List<Map<String, dynamic>> unpaidThisMonth,
+  ) {
+    final activities = <_RecentActivity>[];
+
+    for (final payment in currentPayments.take(3)) {
+      activities.add(_RecentActivity(
+        title: 'Pembayaran Diterima',
+        subtitle:
+            '${payment.namaPenghuniPembayaran} - Rp ${NumberFormat.decimalPattern('id').format(payment.jumlahPembayaran)}',
+        time: payment.tanggalPembayaran.isNotEmpty
+            ? _formatRelativeTime(payment.tanggalPembayaran)
+            : 'Baru saja',
+        icon: Iconsax.wallet_check,
+        color: colorsApp.primary,
+      ));
+    }
+
+    if (unpaidThisMonth.isNotEmpty) {
+      activities.add(_RecentActivity(
+        title: 'Tunggakan Baru',
+        subtitle: '${unpaidThisMonth.length} penghuni belum bayar bulan ini',
+        time: 'Sekarang',
+        icon: Iconsax.warning_2,
+        color: colorsApp.warning,
+      ));
+    }
+
+    if (activities.isEmpty) {
+      activities.add(_RecentActivity(
+        title: 'Tidak ada aktivitas baru',
+        subtitle: 'Semua laporan sudah terupdate.',
+        time: '',
+        // icon: Iconsax.shield_done,
+        icon: Iconsax.shield_tick,
+        color: colorsApp.success,
+      ));
+    }
+
+    return activities;
+  }
+
+  String _formatRelativeTime(String dateString) {
+    try {
+      final date = DateTime.parse(dateString);
+      final difference = DateTime.now().difference(date);
+      if (difference.inDays >= 1) {
+        return '${difference.inDays} hari lalu';
+      }
+      if (difference.inHours >= 1) {
+        return '${difference.inHours} jam lalu';
+      }
+      if (difference.inMinutes >= 1) {
+        return '${difference.inMinutes} menit lalu';
+      }
+    } catch (_) {}
+    return 'Baru saja';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: colorsApp.background,
-      body: CustomScrollView(
-        slivers: [
-          // AppBar
-          SliverAppBar(
-            surfaceTintColor: colorsApp.primary,
-            backgroundColor: colorsApp.primary,
-            expandedHeight: 200,
-            floating: false,
-            pinned: true,
-            leading: IconButton(
-              icon: const Icon(
-                Iconsax.arrow_left_1,
-                color: Colors.white,
-              ),
-              onPressed: () {
-                Navigator.pop(context);
-              },
-            ),
-            flexibleSpace: FlexibleSpaceBar(
-              centerTitle: true,
-              title: Text(
-                'Laporan & Analitik',
-                style: GoogleFonts.poppins(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                ),
-              ),
-              background: Container(
-                decoration: BoxDecoration(
-                  // borderRadius: BorderRadius.only(
-                  //   bottomLeft: Radius.circular(24),
-                  //   bottomRight: Radius.circular(24),
-                  // ),
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      colorsApp.primary,
-                      colorsApp.primary.withOpacity(0.8),
-                    ],
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : CustomScrollView(
+              slivers: [
+                SliverAppBar(
+                  expandedHeight: 240,
+                  pinned: true,
+                  backgroundColor: colorsApp.primary,
+                  elevation: 0,
+                  leading: IconButton(
+                    icon: const Icon(Iconsax.arrow_left_1, color: Colors.white),
+                    onPressed: () => Navigator.pop(context),
                   ),
-                ),
-                child: Padding(
-                  padding: EdgeInsets.only(bottom: 16, left: 20, right: 20),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(height: 45),
-                      Container(
-                        width: double.infinity,
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.13),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
+                  flexibleSpace: FlexibleSpaceBar(
+                    titlePadding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 16),
+                    title: Text(
+                      'Laporan & Analitik',
+                      style: GoogleFonts.poppins(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                    background: Container(
+                      decoration: BoxDecoration(
+                        gradient: colorsApp.primaryGradient,
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 80, 20, 24),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Ringkasan ${reportData.period}',
+                              'Ringkasan Bulan Ini',
                               style: GoogleFonts.poppins(
                                 fontSize: 14,
                                 color: Colors.white70,
                               ),
                             ),
+                            const SizedBox(height: 10),
                             Text(
-                              'Rp ${_formatCurrency(reportData.totalIncome)}',
+                              'Pendapatan: Rp ${NumberFormat.decimalPattern('id').format(_totalIncome)}',
                               style: GoogleFonts.poppins(
-                                fontSize: 30,
-                                fontWeight: FontWeight.bold,
+                                fontSize: 28,
+                                fontWeight: FontWeight.w700,
                                 color: Colors.white,
                               ),
                             ),
-                            //  SizedBox(height: 8),
+                            const SizedBox(height: 12),
                             Text(
-                              'Total Pendapatan',
+                              '${_paidResidents} sudah bayar • ${_unpaidResidents} belum bayar',
                               style: GoogleFonts.poppins(
-                                fontSize: 14,
-                                color: Colors.white.withOpacity(0.8),
+                                fontSize: 13,
+                                color: Colors.white.withOpacity(0.85),
                               ),
                             ),
                           ],
                         ),
                       ),
-                    ],
+                    ),
+                  ),
+                  actions: [
+                    IconButton(
+                      onPressed: () {},
+                      icon: const Icon(Iconsax.document_download,
+                          color: Colors.white),
+                      tooltip: 'Export Laporan',
+                    ),
+                    IconButton(
+                      onPressed: () {},
+                      icon: const Icon(Iconsax.filter5, color: Colors.white),
+                      tooltip: 'Filter',
+                    ),
+                  ],
+                ),
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Statistik Utama',
+                          style: GoogleFonts.poppins(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            color: colorsApp.textPrimary,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        GridView.count(
+                          crossAxisCount: 2,
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          childAspectRatio: 1.08,
+                          crossAxisSpacing: 16,
+                          mainAxisSpacing: 16,
+                          children: [
+                            _buildInfoCard(
+                              title: 'Total Kamar',
+                              value: '$_totalRooms',
+                              icon: Iconsax.home,
+                              color: colorsApp.primary,
+                              subtitle: '$_availableRooms tersedia',
+                            ),
+                            _buildInfoCard(
+                              title: 'Pendapatan',
+                              value:
+                                  'Rp ${NumberFormat.decimalPattern('id').format(_totalIncome)}',
+                              icon: Iconsax.money,
+                              color: colorsApp.success,
+                              subtitle:
+                                  '${_averageOccupancy.toStringAsFixed(1)}% okupansi',
+                            ),
+                            _buildInfoCard(
+                              title: 'Penghuni Aktif',
+                              value: '$_activeResidents',
+                              icon: Iconsax.user5,
+                              color: colorsApp.info,
+                              subtitle: '$_checkoutResidents check-out',
+                            ),
+                            _buildInfoCard(
+                              title: 'Sudah Bayar',
+                              value: '$_paidResidents',
+                              icon: Iconsax.wallet_check,
+                              color: colorsApp.secondary,
+                              subtitle: '$_unpaidResidents belum bayar',
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 28),
+                        _buildTrendSection(),
+                        const SizedBox(height: 28),
+                        _buildTopRoomsSection(),
+                        const SizedBox(height: 28),
+                        _buildRecentActivitySection(),
+                        const SizedBox(height: 24),
+                      ],
+                    ),
                   ),
                 ),
-              ),
+              ],
             ),
-            actions: [
-              // Tombol export
-              IconButton(
-                onPressed: _exportReport,
-                icon: Icon(Iconsax.receive_square5, color: Colors.white),
-                tooltip: 'Export Laporan',
-              ),
-              // Tombol filter
-              IconButton(
-                onPressed: _showFilterDialog,
-                icon: Icon(Iconsax.filter5, color: Colors.white),
-                tooltip: 'Filter',
-              ),
-            ],
-          ),
-
-          // Konten utama
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: EdgeInsets.all(20),
-              child: Column(
-                children: [
-                  // Statistik utama
-                  _buildMainStats(),
-                  SizedBox(height: 40),
-
-                  // Grafik tren
-                  _buildTrendChart(),
-                  SizedBox(height: 24),
-
-                  // Kamar terpopuler
-                  _buildTopRooms(),
-                  SizedBox(height: 24),
-
-                  // Aktivitas terkini
-                  _buildRecentActivities(),
-                  SizedBox(height: 24),
-
-                  // Laporan detail
-                  _buildDetailedReport(),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-
-      // Floating Action Button untuk refresh
-      floatingActionButton: FloatingActionButton(
-        onPressed: _refreshData,
-        backgroundColor: Colors.blue[800],
-        child: Icon(Icons.refresh, color: Colors.white),
-      ),
     );
   }
 
-  // Widget untuk statistik utama
-  Widget _buildMainStats() {
-    return GridView.count(
-      shrinkWrap: true,
-      physics: NeverScrollableScrollPhysics(),
-      crossAxisCount: 2,
-      childAspectRatio: 1.1,
-      crossAxisSpacing: 16,
-      mainAxisSpacing: 16,
-      children: [
-        // Total Kamar
-        _buildStatCard(
-          'Total Kamar',
-          '${reportData.totalRooms}',
-          Icons.hotel,
-          colorsApp.primary,
-          Colors.blue[50]!,
-          '${reportData.occupiedRooms} Terisi • ${reportData.availableRooms} Kosong',
-        ),
-
-        // Penghasilan
-        _buildStatCard(
-          'Penghasilan',
-          'Rp ${_formatCurrency(reportData.totalIncome)}',
-          Icons.attach_money,
-          Colors.green,
-          Colors.green[50]!,
-          '${reportData.averageOccupancy.toStringAsFixed(1)}% Okupansi',
-        ),
-
-        // Penghuni Aktif
-        _buildStatCard(
-          'Penghuni Aktif',
-          '${reportData.activeResidents}',
-          Icons.people,
-          Colors.purple,
-          Colors.purple[50]!,
-          '${reportData.checkoutResidents} Check-out',
-        ),
-
-        // Okupansi
-        _buildStatCard(
-          'Tingkat Okupansi',
-          '${reportData.averageOccupancy.toStringAsFixed(1)}%',
-          Icons.trending_up,
-          Colors.orange,
-          Colors.orange[50]!,
-          'Rata-rata bulan ini',
-        ),
-      ],
-    );
-  }
-
-  // Widget untuk stat card
-  Widget _buildStatCard(String title, String value, IconData icon,
-      Color iconColor, Color cardColor, String subtitle) {
+  Widget _buildInfoCard({
+    required String title,
+    required String value,
+    required IconData icon,
+    required Color color,
+    required String subtitle,
+  }) {
     return Container(
       decoration: BoxDecoration(
-        color: cardColor,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: Offset(0, 4),
-          ),
-        ],
+        color: colorsApp.surface,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: colorsApp.cardShadow,
+        border: Border.all(color: colorsApp.border.withOpacity(0.5)),
       ),
-      padding: EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Container(
-                width: 40,
-                height: 40,
+                width: 42,
+                height: 42,
                 decoration: BoxDecoration(
-                  color: iconColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(10),
+                  gradient: LinearGradient(
+                    colors: [color.withOpacity(0.2), color.withOpacity(0.05)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(14),
                 ),
-                child: Icon(icon, color: iconColor, size: 24),
+                child: Icon(icon, color: color, size: 22),
               ),
-              Icon(
-                Icons.more_vert,
-                color: Colors.grey[400],
-                size: 20,
-              ),
+              const Spacer(),
+              Icon(Iconsax.more, color: colorsApp.textHint, size: 18),
             ],
           ),
-          const SizedBox(height: 12),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: GoogleFonts.poppins(
-                  fontSize: 12,
-                  color: Colors.grey[600],
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                value,
-                style: GoogleFonts.poppins(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
-              ),
-              SizedBox(height: 4),
-              Text(
-                subtitle,
-                style: GoogleFonts.poppins(
-                  fontSize: 11,
-                  color: Colors.grey[500],
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Widget untuk grafik tren
-  Widget _buildTrendChart() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 15,
-            offset: Offset(0, 5),
-          ),
-        ],
-      ),
-      padding: EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header grafik
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Tren Penghasilan',
-                style: GoogleFonts.poppins(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
-              ),
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: Colors.blue[50],
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.timeline, size: 16, color: Colors.blue[800]),
-                    SizedBox(width: 6),
-                    Text(
-                      selectedChartType,
-                      style: GoogleFonts.poppins(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.blue[800],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-
-          SizedBox(height: 16),
-
-          // Grafik sederhana (bar chart custom)
-          Container(
-            height: 250,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: reportData.monthlyData.map((data) {
-                double maxIncome = reportData.monthlyData
-                    .map((d) => d.income)
-                    .reduce((a, b) => a > b ? a : b);
-                double barHeight = (data.income / maxIncome) * 150;
-
-                return Column(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    // Bar
-                    Container(
-                      width: 30,
-                      height: barHeight,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.blue[800]!,
-                            Colors.blue[400]!,
-                          ],
-                        ),
-                        borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(8),
-                          topRight: Radius.circular(8),
-                        ),
-                      ),
-                    ),
-
-                    SizedBox(height: 8),
-
-                    // Label bulan
-                    Text(
-                      data.month,
-                      style: GoogleFonts.poppins(
-                        fontSize: 12,
-                        color: Colors.grey[600],
-                      ),
-                    ),
-
-                    SizedBox(height: 4),
-
-                    // Nilai
-                    Text(
-                      '${(data.income / 1000000).toStringAsFixed(1)}JT',
-                      style: GoogleFonts.poppins(
-                        fontSize: 11,
-                        color: Colors.grey[700],
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-
-                    SizedBox(height: 4),
-
-                    // Persentase okupansi
-                    Container(
-                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: Colors.green[50],
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        '${data.occupancy}%',
-                        style: GoogleFonts.poppins(
-                          fontSize: 10,
-                          color: Colors.green[700],
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ],
-                );
-              }).toList(),
+          Text(
+            title,
+            style: GoogleFonts.poppins(
+              fontSize: 12,
+              color: colorsApp.textSecondary,
+              fontWeight: FontWeight.w500,
             ),
           ),
-
-          SizedBox(height: 16),
-
-          // Legenda
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _buildLegendItem(Colors.blue[800]!, 'Penghasilan'),
-              SizedBox(width: 16),
-              _buildLegendItem(Colors.green, 'Okupansi'),
-            ],
+          const SizedBox(height: 8),
+          Text(
+            value,
+            style: GoogleFonts.poppins(
+              fontSize: 22,
+              fontWeight: FontWeight.w700,
+              color: colorsApp.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            subtitle,
+            style: GoogleFonts.poppins(
+              fontSize: 12,
+              color: colorsApp.textHint,
+            ),
           ),
         ],
       ),
     );
   }
 
-  // Widget untuk legend item
-  Widget _buildLegendItem(Color color, String label) {
-    return Row(
-      children: [
-        Container(
-          width: 12,
-          height: 12,
-          decoration: BoxDecoration(
-            color: color,
-            borderRadius: BorderRadius.circular(3),
-          ),
-        ),
-        const SizedBox(width: 6),
-        Text(
-          label,
-          style: GoogleFonts.poppins(
-            fontSize: 12,
-            color: Colors.grey[600],
-          ),
-        ),
-      ],
-    );
-  }
-
-  // Widget untuk kamar terpopuler
-  Widget _buildTopRooms() {
+  Widget _buildTrendSection() {
     return Container(
+      width: double.infinity,
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 15,
-            offset: const Offset(0, 5),
-          ),
-        ],
+        color: colorsApp.surface,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: colorsApp.cardShadow,
+        border: Border.all(color: colorsApp.border.withOpacity(0.5)),
       ),
       padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Kamar Terpopuler',
+                'Tren Pendapatan',
                 style: GoogleFonts.poppins(
                   fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
+                  fontWeight: FontWeight.w700,
+                  color: colorsApp.textPrimary,
                 ),
               ),
+              const Spacer(),
               Container(
-                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
-                  color: Colors.orange[50],
-                  borderRadius: BorderRadius.circular(20),
+                  color: colorsApp.primary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(18),
                 ),
                 child: Text(
-                  'Top ${reportData.topRooms.length}',
+                  'Bulan Ini',
                   style: GoogleFonts.poppins(
                     fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.orange[800],
+                    fontWeight: FontWeight.w600,
+                    color: colorsApp.primary,
                   ),
                 ),
               ),
             ],
           ),
-          SizedBox(height: 16),
-          Column(
-            children: reportData.topRooms.asMap().entries.map((entry) {
-              int index = entry.key;
-              TopRoom room = entry.value;
+          const SizedBox(height: 20),
+          SizedBox(
+            height: 160,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: _monthlyTrend.map((item) {
+                final maxIncome = _monthlyTrend
+                    .map((m) => m.income)
+                    .fold<double>(0.0,
+                        (prev, current) => current > prev ? current : prev);
+                final double barHeight =
+                    maxIncome == 0.0 ? 0.0 : (item.income / maxIncome) * 120.0;
+                return Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 6),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Container(
+                          height: barHeight < 24 ? 24 : barHeight,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                colorsApp.primary,
+                                colorsApp.primaryLight
+                              ],
+                              begin: Alignment.bottomCenter,
+                              end: Alignment.topCenter,
+                            ),
+                            borderRadius: BorderRadius.circular(18),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          item.label,
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            color: colorsApp.textSecondary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Total Bulan Ini',
+                style: GoogleFonts.poppins(
+                  fontSize: 14,
+                  color: colorsApp.textSecondary,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              Text(
+                'Rata-rata ${_averageOccupancy.toStringAsFixed(1)}% okupansi',
+                style: GoogleFonts.poppins(
+                  fontSize: 14,
+                  color: colorsApp.textSecondary,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
 
-              return Container(
-                margin: EdgeInsets.only(
-                    bottom: index == reportData.topRooms.length - 1 ? 0 : 12),
+  Widget _buildTopRoomsSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Top Kamar',
+          style: GoogleFonts.poppins(
+            fontSize: 18,
+            fontWeight: FontWeight.w700,
+            color: colorsApp.textPrimary,
+          ),
+        ),
+        const SizedBox(height: 16),
+        Column(
+          children: _topRooms.map((room) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: colorsApp.surface,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: colorsApp.subtleShadow,
+                  border: Border.all(color: colorsApp.border.withOpacity(0.5)),
+                ),
+                padding: const EdgeInsets.all(16),
                 child: Row(
                   children: [
-                    // Ranking
                     Container(
-                      width: 32,
-                      height: 32,
+                      width: 52,
+                      height: 52,
                       decoration: BoxDecoration(
-                        color:
-                            index == 0 ? Colors.amber[100] : Colors.grey[100],
-                        borderRadius: BorderRadius.circular(8),
+                        gradient: colorsApp.secondaryGradient,
+                        borderRadius: BorderRadius.circular(16),
                       ),
                       child: Center(
                         child: Text(
-                          '${index + 1}',
+                          room.roomNumber,
                           style: GoogleFonts.poppins(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: index == 0
-                                ? Colors.amber[800]
-                                : Colors.grey[600],
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
                           ),
                         ),
                       ),
                     ),
-
-                    SizedBox(width: 12),
-
-                    // Info kamar
+                    const SizedBox(width: 16),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -643,426 +608,153 @@ class _LaporanPageState extends State<LaporanPage> {
                           Text(
                             'Kamar ${room.roomNumber}',
                             style: GoogleFonts.poppins(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.black87,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                              color: colorsApp.textPrimary,
                             ),
                           ),
-                          SizedBox(height: 2),
+                          const SizedBox(height: 4),
                           Text(
-                            room.roomType,
+                            '${NumberFormat.decimalPattern('id').format(room.income)} pemasukan',
                             style: GoogleFonts.poppins(
                               fontSize: 12,
-                              color: Colors.grey[600],
+                              color: colorsApp.textSecondary,
                             ),
                           ),
                         ],
                       ),
                     ),
-
-                    // Statistik
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(
-                          'Rp ${_formatCurrency(room.income)}',
-                          style: GoogleFonts.poppins(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
-                          ),
-                        ),
-                        SizedBox(height: 2),
-                        Text(
-                          '${room.occupancyDays} hari',
-                          style: GoogleFonts.poppins(
-                            fontSize: 12,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    SizedBox(width: 8),
-
-                    // Icon
-                    Icon(
-                      Icons.chevron_right,
-                      color: Colors.grey[400],
+                    Text(
+                      '${room.payments}x',
+                      style: GoogleFonts.poppins(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: colorsApp.primary,
+                      ),
                     ),
                   ],
                 ),
-              );
-            }).toList(),
-          ),
-        ],
-      ),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
     );
   }
 
-  // Widget untuk aktivitas terkini
-  Widget _buildRecentActivities() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 15,
-            offset: Offset(0, 5),
+  Widget _buildRecentActivitySection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Aktivitas Terbaru',
+          style: GoogleFonts.poppins(
+            fontSize: 18,
+            fontWeight: FontWeight.w700,
+            color: colorsApp.textPrimary,
           ),
-        ],
-      ),
-      padding: EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Aktivitas Terkini',
-            style: GoogleFonts.poppins(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
-            ),
-          ),
-          SizedBox(height: 16),
-          Column(
-            children: reportData.recentActivities.map((activity) {
-              return Container(
-                margin: EdgeInsets.only(bottom: 16),
+        ),
+        const SizedBox(height: 16),
+        Column(
+          children: _recentActivities.map((activity) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: colorsApp.surface,
+                  borderRadius: BorderRadius.circular(18),
+                  boxShadow: colorsApp.subtleShadow,
+                  border: Border.all(color: colorsApp.border.withOpacity(0.5)),
+                ),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Icon dengan background
                     Container(
-                      width: 48,
-                      height: 48,
+                      width: 44,
+                      height: 44,
                       decoration: BoxDecoration(
-                        color: activity.color.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
+                        color: activity.color.withOpacity(0.14),
+                        borderRadius: BorderRadius.circular(14),
                       ),
-                      child: Icon(
-                        activity.icon,
-                        color: activity.color,
-                        size: 24,
-                      ),
+                      child:
+                          Icon(activity.icon, color: activity.color, size: 22),
                     ),
-
-                    SizedBox(width: 16),
-
-                    // Detail aktivitas
+                    const SizedBox(width: 14),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            activity.activity,
-                            style: GoogleFonts.poppins(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.black87,
-                            ),
-                          ),
-                          SizedBox(height: 4),
-                          Text(
-                            activity.description,
+                            activity.title,
                             style: GoogleFonts.poppins(
                               fontSize: 14,
-                              color: Colors.grey[600],
+                              fontWeight: FontWeight.w700,
+                              color: colorsApp.textPrimary,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            activity.subtitle,
+                            style: GoogleFonts.poppins(
+                              fontSize: 12,
+                              color: colorsApp.textSecondary,
                             ),
                           ),
                         ],
                       ),
                     ),
-
-                    // Waktu
                     Text(
                       activity.time,
                       style: GoogleFonts.poppins(
                         fontSize: 12,
-                        color: Colors.grey[500],
+                        color: colorsApp.textHint,
                       ),
                     ),
                   ],
                 ),
-              );
-            }).toList(),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Widget untuk laporan detail
-  Widget _buildDetailedReport() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 15,
-            offset: Offset(0, 5),
-          ),
-        ],
-      ),
-      padding: EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Laporan Detail',
-            style: GoogleFonts.poppins(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
-            ),
-          ),
-
-          SizedBox(height: 16),
-
-          // Statistik detail
-          _buildDetailRow(
-              'Total Kamar Tersedia', '${reportData.totalRooms} kamar'),
-          _buildDetailRow('Kamar Terisi',
-              '${reportData.occupiedRooms} kamar (${(reportData.occupiedRooms / reportData.totalRooms * 100).toStringAsFixed(1)}%)'),
-          _buildDetailRow('Kamar Kosong',
-              '${reportData.availableRooms} kamar (${(reportData.availableRooms / reportData.totalRooms * 100).toStringAsFixed(1)}%)'),
-          _buildDetailRow(
-              'Penghuni Aktif', '${reportData.activeResidents} orang'),
-          _buildDetailRow(
-              'Check-out Bulan Ini', '${reportData.checkoutResidents} orang'),
-          _buildDetailRow('Rata-rata Okupansi',
-              '${reportData.averageOccupancy.toStringAsFixed(1)}%'),
-          _buildDetailRow('Penghasilan Rata-rata/Kamar',
-              'Rp ${_formatCurrency(reportData.totalIncome / reportData.occupiedRooms)}'),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDetailRow(String label, String value) {
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: 12),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            label,
-            style: GoogleFonts.poppins(
-              fontSize: 14,
-              color: Colors.grey[600],
-            ),
-          ),
-          Text(
-            value,
-            style: GoogleFonts.poppins(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: Colors.black87,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Format currency
-  String _formatCurrency(double amount) {
-    if (amount >= 1000000) {
-      return '${(amount / 1000000).toStringAsFixed(1)}JT';
-    } else if (amount >= 1000) {
-      return '${(amount / 1000).toStringAsFixed(1)}RB';
-    }
-    return amount.toStringAsFixed(0);
-  }
-
-  // Fungsi untuk export laporan
-  void _exportReport() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Export Laporan'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Pilih format export:'),
-            SizedBox(height: 16),
-            _buildExportOption(Icons.picture_as_pdf, 'PDF', Colors.red),
-            SizedBox(height: 12),
-            _buildExportOption(Icons.insert_drive_file, 'Excel', Colors.green),
-            SizedBox(height: 12),
-            _buildExportOption(Icons.image, 'Gambar', Colors.blue),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('Batal'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Laporan berhasil diexport'),
-                  backgroundColor: Colors.green,
-                ),
-              );
-            },
-            child: Text('Export'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildExportOption(IconData icon, String label, Color color) {
-    return ListTile(
-      leading: Container(
-        width: 40,
-        height: 40,
-        decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Icon(icon, color: color),
-      ),
-      title: Text(label),
-      trailing: Icon(Icons.chevron_right),
-      onTap: () {
-        Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Export $label berhasil'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      },
-    );
-  }
-
-  // Dialog filter
-  void _showFilterDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) {
-          return AlertDialog(
-            title: Text('Filter Laporan'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Pilih periode
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    'Periode Waktu',
-                    style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
-                  ),
-                ),
-                SizedBox(height: 8),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: periods.map((period) {
-                    bool isSelected = selectedPeriod == period;
-                    return ChoiceChip(
-                      label: Text(period),
-                      selected: isSelected,
-                      selectedColor: Colors.blue[800],
-                      onSelected: (selected) {
-                        setState(() {
-                          selectedPeriod = period;
-                        });
-                      },
-                      labelStyle: GoogleFonts.poppins(
-                        color: isSelected ? Colors.white : Colors.black87,
-                      ),
-                    );
-                  }).toList(),
-                ),
-
-                SizedBox(height: 20),
-
-                // Pilih tipe chart
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    'Tampilkan Data',
-                    style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
-                  ),
-                ),
-                SizedBox(height: 8),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: chartTypes.map((type) {
-                    bool isSelected = selectedChartType == type;
-                    return ChoiceChip(
-                      label: Text(type),
-                      selected: isSelected,
-                      selectedColor: Colors.blue[800],
-                      onSelected: (selected) {
-                        setState(() {
-                          selectedChartType = type;
-                        });
-                      },
-                      labelStyle: GoogleFonts.poppins(
-                        color: isSelected ? Colors.white : Colors.black87,
-                      ),
-                    );
-                  }).toList(),
-                ),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text('Reset'),
               ),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  _applyFilter();
-                },
-                child: const Text('Terapkan'),
-              ),
-            ],
-          );
-        },
-      ),
-    );
-  }
-
-  void _applyFilter() {
-    // Aplikasi filter di sini
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Filter diterapkan: $selectedPeriod'),
-        backgroundColor: Colors.blue[800],
-      ),
-    );
-  }
-
-  void _refreshData() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Memperbarui data...'),
-        backgroundColor: Colors.blue,
-      ),
-    );
-
-    // Simulasi loading
-    Future.delayed(const Duration(seconds: 1), () {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Data berhasil diperbarui'),
-          backgroundColor: Colors.green,
+            );
+          }).toList(),
         ),
-      );
-    });
+      ],
+    );
   }
+}
+
+class _MonthlyTrend {
+  final String label;
+  final double income;
+  final double occupancy;
+
+  _MonthlyTrend(this.label, this.income, this.occupancy);
+}
+
+class _TopRoom {
+  final String roomNumber;
+  final double income;
+  final int payments;
+
+  _TopRoom({
+    required this.roomNumber,
+    required this.income,
+    required this.payments,
+  });
+}
+
+class _RecentActivity {
+  final String title;
+  final String subtitle;
+  final String time;
+  final IconData icon;
+  final Color color;
+
+  _RecentActivity({
+    required this.title,
+    required this.subtitle,
+    required this.time,
+    required this.icon,
+    required this.color,
+  });
 }

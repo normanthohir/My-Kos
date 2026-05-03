@@ -106,7 +106,7 @@ class DatabaseHelper {
     final List<Map<String, dynamic>> maps = await db.query(
       'kamar',
       where: 'status_kamar = ?',
-      whereArgs: ['terisi'],
+      whereArgs: ['Terisi'],
     );
     return List.generate(
       maps.length,
@@ -153,13 +153,13 @@ class DatabaseHelper {
       // Simpan data penghuni
       await txn.insert('penghuni', penghuni.toMap());
 
-      //  Update status kamar menjadi 'terisi'
+      //  Update status kamar menjadi 'Terisi'
       if (penghuni.kamarId != null) {
         await txn.update(
           'kamar',
           {
-            'status_kamar': 'terisi'
-          }, // Pastikan string 'terisi' sama dengan di database kamu
+            'status_kamar': 'Terisi'
+          }, // Pastikan string 'Terisi' sama dengan di database kamu
           where: 'id = ?',
           whereArgs: [penghuni.kamarId],
         );
@@ -195,7 +195,7 @@ class DatabaseHelper {
         if (penghuni.kamarId != null) {
           await txn.update(
             'kamar',
-            {'status_kamar': 'terisi'},
+            {'status_kamar': 'Terisi'},
             where: 'id = ?',
             whereArgs: [penghuni.kamarId],
           );
@@ -302,6 +302,25 @@ class DatabaseHelper {
     final db = await database;
     final List<Map<String, dynamic>> maps = await db.query('pembayaran');
     return List.generate(maps.length, (i) => Pembayaran.fromMap(maps[i]));
+  }
+
+  Future<List<Map<String, dynamic>>> getPenghuniSudahBayarBulanIni() async {
+    final db = await database;
+    final now = DateTime.now();
+    final currentMonth = now.month.toString().padLeft(2, '0');
+    final currentYear = now.year.toString();
+
+    final String sql = '''
+    SELECT DISTINCT p.id AS penghuni_id, p.nama_penghuni, k.nomor_kamar, k.type_kamar, k.harga_kamar
+    FROM pembayaran pay
+    JOIN penghuni p ON pay.penghuni_id = p.id
+    JOIN kamar k ON pay.kamar_id = k.id
+    WHERE strftime('%m', pay.periode_pembayaran) = ?
+      AND strftime('%Y', pay.periode_pembayaran) = ?
+      AND p.status_penghuni = 1
+  ''';
+
+    return await db.rawQuery(sql, [currentMonth, currentYear]);
   }
 
   // tagihan

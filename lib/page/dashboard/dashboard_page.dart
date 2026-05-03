@@ -22,36 +22,38 @@ class DashboardPage extends StatefulWidget {
 class _DashboardPageState extends State<DashboardPage> {
   List<Map<String, dynamic>> _belumBayar = [];
   List<Map<String, dynamic>> _penghuniAktfi = [];
+  List<Map<String, dynamic>> _sudahBayar = [];
   List<Map<String, dynamic>> _kamarkosong = [];
 
   void _refresh() async {
-    // Sekarang memanggil semua tunggakan tanpa terbatas 1 bulan saja
-    final datatagihan = await DatabaseHelper().getAllTunggakan();
+    // Ambil data untuk dashboard: tagihan bulan ini, penghuni aktif, yang sudah bayar, dan kamar tersedia.
+    final datatagihan = await DatabaseHelper().getTagihanJatuhTempo();
     final dataPenghuni = await DatabaseHelper().getPenghuniAktif();
+    final dataSudahBayar =
+        await DatabaseHelper().getPenghuniSudahBayarBulanIni();
     final dataKamar = await DatabaseHelper().getKamarTersedia();
     setState(() {
       _belumBayar = datatagihan;
       _penghuniAktfi = dataPenghuni;
+      _sudahBayar = dataSudahBayar;
       _kamarkosong = dataKamar.map((kamar) => kamar.toMap()).toList();
     });
   }
 
-  double get _totalBelumBayar {
-    return _belumBayar.fold(0, (sum, item) {
-      return sum + (item['jumlah'] ?? 0).toDouble();
-    });
+  int get _totalBelumBayar {
+    return _belumBayar.length;
+  }
+
+  int get _totalSudahBayar {
+    return _sudahBayar.length;
   }
 
   double get _totalpenghuniAktfi {
-    return _penghuniAktfi.fold(0, (sum, item) {
-      return sum + (item['jumlah'] ?? 0).toDouble();
-    });
+    return _penghuniAktfi.length.toDouble();
   }
 
   double get _totalKamarTersedia {
-    return _kamarkosong.fold(0, (sum, item) {
-      return sum + (item['jumlah'] ?? 0).toDouble();
-    });
+    return _kamarkosong.length.toDouble();
   }
 
   @override
@@ -201,7 +203,8 @@ class _DashboardPageState extends State<DashboardPage> {
                     _buildStatCard(
                       icon: Iconsax.wallet_check,
                       title: 'Sudah Bayar',
-                      value: '10',
+                      value: NumberFormat.decimalPattern('id')
+                          .format(_totalSudahBayar),
                       trend: '+3',
                       color: colorsApp.info,
                       iconBg: colorsApp.info.withOpacity(0.1),
@@ -647,11 +650,9 @@ class _DashboardPageState extends State<DashboardPage> {
         'subtitle': 'Analisis keuangan',
         'color': colorsApp.secondary,
         'onTap': () {
-          // Navigator.push(
-          //     context, MaterialPageRoute(builder: (context) => LaporanPage()));
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (_) => const MaintenancePage()),
+            MaterialPageRoute(builder: (context) => const LaporanPage()),
           );
         },
       },
